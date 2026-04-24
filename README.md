@@ -32,6 +32,9 @@ fvm install
 
 # Fetch the project dependencies
 fvm flutter pub get
+
+# Run the project
+fvm flutter run
 ```
 
 
@@ -69,7 +72,7 @@ To make sure your editor uses the correct Flutter version, you must point it to 
    # OR
    git checkout -b fix/your-bug-name
    ```
-3. **Write Code:** Keep it **minimalist** and **offline-first**.
+3. **Write Code:** Focus on performance and reliability.
 4. **Update the Changelog:** Add a line about your changes to `CHANGELOG.md` under the `[Unreleased]` section.
 5. **Run Local Checks:**
    ```bash
@@ -86,14 +89,6 @@ To make sure your editor uses the correct Flutter version, you must point it to 
 
 ---
 
-## 📜 Coding Standards
-
-- **Offline-First:** Assume there is NO internet. Use local storage for all primary actions.
-- **Ksh Rate Calculation:** All price math must happen on-device based on the timer.
-- **Minimalist UI:** High contrast, big buttons, no clutter. If the "Bike Guy" can't use it with one thumb while holding a wrench, it's too complex.
-
----
-
 ## 👥 Contributors
 
 This project is built by the community. Join us!
@@ -103,4 +98,4 @@ This project is built by the community. Join us!
 </a>
 
 ---
-Built with ❤️ by [Hacklabs](https://github.com/Hacklabs-app)
+Built with ❤️ by [Hacklabs](https://hacklabs.app)
