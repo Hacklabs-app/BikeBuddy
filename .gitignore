@@ -76,4 +76,4 @@ doc/api/
 \n# FVM\n.fvm/flutter_sdk\n.fvm/bin\n.fvm/fvm_config.json\n!.fvm/fvm_config.json
 
 # FVM Version Cache
-.fvm/
+.fvm/\n# IDE Settings\n.vscode/

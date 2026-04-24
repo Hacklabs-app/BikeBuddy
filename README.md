@@ -39,11 +39,11 @@ fvm flutter run
 
 
 ### 4. Configure Your IDE
-To make sure your editor uses the correct Flutter version, you must point it to the local project SDK:
+To ensure your IDE uses the correct Flutter version, you **must** manually configure your workspace:
 
 #### For VS Code:
-1. Create a folder named `.vscode` in the root (if it doesn't exist).
-2. Create a file named `settings.json` and add:
+1. Create a folder named `.vscode` in the root.
+2. Create a file named `settings.json` inside it and add:
    ```json
    {
      "dart.flutterSdkPath": ".fvm/flutter_sdk",
@@ -55,10 +55,7 @@ To make sure your editor uses the correct Flutter version, you must point it to 
      }
    }
    ```
-
-#### For Android Studio:
-1. Go to **Settings** > **Languages & Frameworks** > **Flutter**.
-2. Set the **Flutter SDK path** to `[Your_Project_Path]/.fvm/flutter_sdk`.
+*Note: This file is git-ignored to prevent personal settings conflicts.*
 
 ---
 
@@ -73,7 +70,7 @@ To make sure your editor uses the correct Flutter version, you must point it to 
    git checkout -b fix/your-bug-name
    ```
 3. **Write Code:** Focus on performance and reliability.
-4. **Update the Changelog:** Add a line about your changes to `CHANGELOG.md` under the `[Unreleased]` section.
+4. **Update the Changelog:** Add a line about your changes to [CHANGELOG.md](./CHANGELOG.md) under the `[Unreleased]` section.
 5. **Run Local Checks:**
    ```bash
    fvm flutter analyze  # Ensure no errors
