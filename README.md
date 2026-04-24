@@ -39,10 +39,11 @@ fvm flutter run
 
 
 ### 4. Configure Your IDE
-The project comes pre-configured for VS Code, but you should verify your settings:
+To ensure your IDE uses the correct Flutter version, you **must** manually configure your workspace:
 
 #### For VS Code:
-The `.vscode/settings.json` file should already exist with the following settings. If it doesn't, create it:
+1. Create a folder named `.vscode` in the root.
+2. Create a file named `settings.json` inside it and add:
    ```json
    {
      "dart.flutterSdkPath": ".fvm/flutter_sdk",
@@ -54,7 +55,7 @@ The `.vscode/settings.json` file should already exist with the following setting
      }
    }
    ```
-*Note: Using `.fvm/flutter_sdk` ensures your IDE always uses the version defined by FVM, even after upgrades.*
+*Note: This file is git-ignored to prevent personal settings conflicts.*
 
 ---
 
