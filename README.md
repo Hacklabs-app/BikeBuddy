@@ -86,9 +86,7 @@ To ensure your IDE uses the correct Flutter version, you **must** manually confi
 
 ---
 
-## 👥 Contributors
-
-This project is built by the community. Join us!
+### Contributors
 
 <a href="https://github.com/Hacklabs-app/BikeBuddy/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Hacklabs-app/BikeBuddy" />
