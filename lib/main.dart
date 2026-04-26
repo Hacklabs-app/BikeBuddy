@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'app.dart';
+import 'core/constants/supabase_constants.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  await Supabase.initialize(
+    url: SupabaseConstants.url,
+    anonKey: SupabaseConstants.anonKey,
+    realtimeClientOptions: const RealtimeClientOptions(
+      logLevel: RealtimeLogLevel.info,
+    ),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
+  runApp(
+    // Riverpod wraps everything — all providers available app-wide
+    const ProviderScope(
+      child: BikeBuddyApp(),
+    ),
+  );
 }
