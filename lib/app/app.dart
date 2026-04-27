@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'shared/providers/auth_provider.dart';
-import 'core/models/user_model.dart';
-import 'features/auth/login_screen.dart';
-import 'features/admin/dashboard/admin_dashboard.dart';
-import 'features/customer/home/customer_home.dart';
-import 'features/customer/booking/booking_confirm_screen.dart';
-import 'features/customer/ride/active_ride_screen.dart';
-import 'features/customer/ride/scan_qr_screen.dart';
-import 'features/customer/history/ride_history_screen.dart';
+import '../shared/providers/auth_provider.dart';
+import '../core/models/user_model.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/admin/dashboard/admin_dashboard.dart';
+import '../features/customer/home/customer_home.dart';
+import '../features/customer/booking/booking_confirm_screen.dart';
+import '../features/customer/ride/active_ride_screen.dart';
+import '../features/customer/ride/scan_qr_screen.dart';
+import '../features/customer/history/ride_history_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
