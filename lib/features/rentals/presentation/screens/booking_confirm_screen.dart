@@ -52,8 +52,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
     _fadeAnim = CurvedAnimation(parent: _enterCtrl, curve: Curves.easeOut);
     _scaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(parent: _successCtrl, curve: Curves.elasticOut));
-    _checkAnim =
-        CurvedAnimation(parent: _successCtrl, curve: Curves.easeOut);
+    _checkAnim = CurvedAnimation(parent: _successCtrl, curve: Curves.easeOut);
   }
 
   @override
@@ -84,8 +83,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
         'expected_return': now.add(Duration(hours: _hours)).toIso8601String(),
         'hourly_rate': widget.bike['hourly_rate'],
         'status': 'reserved',
-        'hold_expiry':
-            now.add(const Duration(minutes: 15)).toIso8601String(),
+        'hold_expiry': now.add(const Duration(minutes: 15)).toIso8601String(),
       });
       await supabase
           .from('bikes')
@@ -95,9 +93,8 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
       HapticFeedback.heavyImpact();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Booking failed: $e'),
-              backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Booking failed: $e'), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -112,8 +109,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
     final type = bike['type'] as String? ?? 'standard';
     final shopName =
         (bike['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
-    final shopLocation =
-        (bike['shops'] as Map?)?['location'] as String? ?? '';
+    final shopLocation = (bike['shops'] as Map?)?['location'] as String? ?? '';
     final rate = (bike['hourly_rate'] as num).toDouble();
 
     final typeColor = switch (type) {
@@ -264,8 +260,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
     );
   }
 
-  Widget _confirmRow(
-      IconData icon, String label, String value, bool isDark) {
+  Widget _confirmRow(IconData icon, String label, String value, bool isDark) {
     return Row(children: [
       Container(
         padding: const EdgeInsets.all(8),
@@ -299,13 +294,10 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [
-                    typeColor.withValues(alpha: 0.15),
-                    typeColor.withValues(alpha: 0.05)
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight),
+              gradient: LinearGradient(colors: [
+                typeColor.withValues(alpha: 0.15),
+                typeColor.withValues(alpha: 0.05)
+              ], begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: typeColor.withValues(alpha: 0.2)),
             ),
@@ -344,9 +336,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
                           const SizedBox(width: 2),
                           Text(shopLocation,
                               style: TextStyle(
-                                  color: isDark
-                                      ? Colors.white38
-                                      : _textLight,
+                                  color: isDark ? Colors.white38 : _textLight,
                                   fontSize: 12)),
                         ]),
                       ],
@@ -394,8 +384,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
                               : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: sel ? _green : _border,
-                          width: sel ? 0 : 1.5),
+                          color: sel ? _green : _border, width: sel ? 0 : 1.5),
                       boxShadow: sel
                           ? [
                               BoxShadow(
@@ -433,8 +422,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
             decoration: BoxDecoration(
                 color: _amber.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border:
-                    Border.all(color: _amber.withValues(alpha: 0.25))),
+                border: Border.all(color: _amber.withValues(alpha: 0.25))),
             child: Row(children: [
               const Icon(Icons.info_outline, color: _amber, size: 18),
               const SizedBox(width: 10),
@@ -459,18 +447,18 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: _border)),
             child: Column(children: [
-              _costRow('Rate', '\$${rate.toStringAsFixed(2)}/hr', isDark,
-                  false),
+              _costRow(
+                  'Rate', '\$${rate.toStringAsFixed(2)}/hr', isDark, false),
               const SizedBox(height: 10),
-              _costRow('Duration',
-                  '$_hours hour${_hours > 1 ? 's' : ''}', isDark, false),
+              _costRow('Duration', '$_hours hour${_hours > 1 ? 's' : ''}',
+                  isDark, false),
               const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
                   child: Divider(color: _border)),
-              _costRow('Estimated Total',
-                  '\$${_totalCost.toStringAsFixed(2)}', isDark, true),
+              _costRow('Estimated Total', '\$${_totalCost.toStringAsFixed(2)}',
+                  isDark, true),
               const SizedBox(height: 6),
-              Text(
+              const Text(
                 'Final cost rounded to nearest 15-min block on return',
                 style: TextStyle(color: _textLight, fontSize: 11),
                 textAlign: TextAlign.center,
@@ -497,8 +485,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
                       height: 22,
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2.5))
-                  : Text(
-                      'Confirm — \$${_totalCost.toStringAsFixed(2)}',
+                  : Text('Confirm — \$${_totalCost.toStringAsFixed(2)}',
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -506,7 +493,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
             ),
           ),
           const SizedBox(height: 12),
-          Center(
+          const Center(
             child: Text('Pay at the shop on return',
                 style: TextStyle(color: _textLight, fontSize: 12)),
           ),
@@ -515,8 +502,7 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
     );
   }
 
-  Widget _costRow(
-      String label, String value, bool isDark, bool isTotal) {
+  Widget _costRow(String label, String value, bool isDark, bool isTotal) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -526,13 +512,10 @@ class _BookingConfirmScreenState extends ConsumerState<BookingConfirmScreen>
                     ? (isDark ? Colors.white : _textDark)
                     : (isDark ? Colors.white60 : _textLight),
                 fontSize: isTotal ? 15 : 13,
-                fontWeight:
-                    isTotal ? FontWeight.w700 : FontWeight.normal)),
+                fontWeight: isTotal ? FontWeight.w700 : FontWeight.normal)),
         Text(value,
             style: TextStyle(
-                color: isTotal
-                    ? _green
-                    : (isDark ? Colors.white : _textDark),
+                color: isTotal ? _green : (isDark ? Colors.white : _textDark),
                 fontSize: isTotal ? 20 : 14,
                 fontWeight: FontWeight.w800)),
       ],

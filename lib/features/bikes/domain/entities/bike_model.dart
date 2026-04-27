@@ -1,4 +1,5 @@
 enum BikeType { electric, mountainBike, city, standard }
+
 enum BikeStatus { available, rented, reserved, maintenance }
 
 class BikeModel {

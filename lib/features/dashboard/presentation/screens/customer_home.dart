@@ -19,7 +19,8 @@ final shopsProvider = FutureProvider<List<ShopWithStats>>((ref) async {
 
 // Fetches available bikes (optionally filtered)
 final availableBikesProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String?>((ref, shopId) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String?>(
+        (ref, shopId) async {
   var query = supabase
       .from('bikes')
       .select('*, shops(name, location)')
@@ -125,13 +126,10 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
     final isDark = theme.brightness == Brightness.dark;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: isDark
-          ? SystemUiOverlayStyle.light
-          : SystemUiOverlayStyle.dark,
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: isDark
-            ? const Color(0xFF0D1117)
-            : const Color(0xFFF5F7FA),
+        backgroundColor:
+            isDark ? const Color(0xFF0D1117) : const Color(0xFFF5F7FA),
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: CustomScrollView(
@@ -140,10 +138,12 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
               _buildSliverAppBar(isDark),
               SliverToBoxAdapter(child: _buildSearchBar(isDark)),
               SliverToBoxAdapter(child: _buildStatsRow(isDark)),
-              SliverToBoxAdapter(child: _buildSectionHeader('Nearby Shops', isDark)),
+              SliverToBoxAdapter(
+                  child: _buildSectionHeader('Nearby Shops', isDark)),
               SliverToBoxAdapter(child: _buildShopsCarousel(isDark)),
               SliverToBoxAdapter(child: _buildFilterRow(isDark)),
-              SliverToBoxAdapter(child: _buildSectionHeader('Available Bikes', isDark)),
+              SliverToBoxAdapter(
+                  child: _buildSectionHeader('Available Bikes', isDark)),
               _buildBikeGrid(isDark),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
@@ -163,7 +163,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
       expandedHeight: 180,
       floating: false,
       pinned: true,
-      backgroundColor: isDark ? const Color(0xFF0D1117) : const Color(0xFFF5F7FA),
+      backgroundColor:
+          isDark ? const Color(0xFF0D1117) : const Color(0xFFF5F7FA),
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
@@ -221,7 +222,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                             onTap: () {},
                             child: CircleAvatar(
                               radius: 20,
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.2),
                               child: const Icon(
                                 Icons.person_outline,
                                 color: Colors.white,
@@ -315,22 +317,28 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
     final shopsAsync = ref.watch(shopsProvider);
 
     return shopsAsync.when(
-      loading: () => const SizedBox(height: 80, child: Center(child: CircularProgressIndicator())),
+      loading: () => const SizedBox(
+          height: 80, child: Center(child: CircularProgressIndicator())),
       error: (e, _) => const SizedBox(),
       data: (shops) {
-        final totalAvailable = shops.fold(0, (sum, s) => sum + s.availableBikes);
+        final totalAvailable =
+            shops.fold(0, (sum, s) => sum + s.availableBikes);
         final totalShops = shops.length;
-        final activeRentals = shops.fold(0, (sum, s) => sum + (s.totalBikes - s.availableBikes));
+        final activeRentals =
+            shops.fold(0, (sum, s) => sum + (s.totalBikes - s.availableBikes));
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Row(
             children: [
-              _statCard('$totalAvailable', 'Available', Icons.pedal_bike, const Color(0xFF00C853), isDark),
+              _statCard('$totalAvailable', 'Available', Icons.pedal_bike,
+                  const Color(0xFF00C853), isDark),
               const SizedBox(width: 12),
-              _statCard('$totalShops', 'Shops', Icons.store_outlined, const Color(0xFF2979FF), isDark),
+              _statCard('$totalShops', 'Shops', Icons.store_outlined,
+                  const Color(0xFF2979FF), isDark),
               const SizedBox(width: 12),
-              _statCard('$activeRentals', 'On Ride', Icons.directions_bike, const Color(0xFFFF6D00), isDark),
+              _statCard('$activeRentals', 'On Ride', Icons.directions_bike,
+                  const Color(0xFFFF6D00), isDark),
             ],
           ),
         );
@@ -338,7 +346,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
     );
   }
 
-  Widget _statCard(String value, String label, IconData icon, Color color, bool isDark) {
+  Widget _statCard(
+      String value, String label, IconData icon, Color color, bool isDark) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -405,10 +414,10 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
           ),
           GestureDetector(
             onTap: () {},
-            child: Text(
+            child: const Text(
               'See all',
               style: TextStyle(
-                color: const Color(0xFF00C853),
+                color: Color(0xFF00C853),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -429,11 +438,13 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
       child: shopsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text('Could not load shops', style: TextStyle(color: Colors.grey.shade500)),
+          child: Text('Could not load shops',
+              style: TextStyle(color: Colors.grey.shade500)),
         ),
         data: (shops) => shops.isEmpty
             ? Center(
-                child: Text('No shops found', style: TextStyle(color: Colors.grey.shade500)),
+                child: Text('No shops found',
+                    style: TextStyle(color: Colors.grey.shade500)),
               )
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -471,12 +482,17 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
           children: [
             // Decorative top bar
             Positioned(
-              top: 0, left: 0, right: 0,
+              top: 0,
+              left: 0,
+              right: 0,
               child: Container(
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isAvailable ? const Color(0xFF00C853) : Colors.grey.shade400,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  color: isAvailable
+                      ? const Color(0xFF00C853)
+                      : Colors.grey.shade400,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
               ),
             ),
@@ -497,9 +513,11 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                         child: shop.logoUrl != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.network(shop.logoUrl!, fit: BoxFit.cover),
+                                child: Image.network(shop.logoUrl!,
+                                    fit: BoxFit.cover),
                               )
-                            : const Icon(Icons.store, color: Color(0xFF00C853), size: 24),
+                            : const Icon(Icons.store,
+                                color: Color(0xFF00C853), size: 24),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -509,7 +527,9 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                             Text(
                               shop.name,
                               style: TextStyle(
-                                color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0D1117),
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
                               ),
@@ -519,7 +539,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                             if (shop.location != null)
                               Text(
                                 shop.location!,
-                                style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                style: TextStyle(
+                                    color: Colors.grey.shade500, fontSize: 11),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -532,7 +553,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _availabilityChip(shop.availableBikes, shop.totalBikes, isAvailable),
+                      _availabilityChip(
+                          shop.availableBikes, shop.totalBikes, isAvailable),
                       if (shop.lowestRate != null)
                         Text(
                           'from \$${shop.lowestRate!.toStringAsFixed(0)}/hr',
@@ -599,15 +621,18 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                         : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: selected
-                    ? [BoxShadow(color: const Color(0xFF00C853).withValues(alpha: 0.3), blurRadius: 8)]
+                    ? [
+                        BoxShadow(
+                            color:
+                                const Color(0xFF00C853).withValues(alpha: 0.3),
+                            blurRadius: 8)
+                      ]
                     : [],
               ),
               child: Text(
                 _filters[i],
                 style: TextStyle(
-                  color: selected
-                      ? Colors.white
-                      : Colors.grey.shade500,
+                  color: selected ? Colors.white : Colors.grey.shade500,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
@@ -626,10 +651,13 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
 
     return bikesAsync.when(
       loading: () => const SliverToBoxAdapter(
-        child: SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+        child: SizedBox(
+            height: 200, child: Center(child: CircularProgressIndicator())),
       ),
       error: (e, _) => SliverToBoxAdapter(
-        child: Center(child: Text('Could not load bikes', style: TextStyle(color: Colors.grey.shade500))),
+        child: Center(
+            child: Text('Could not load bikes',
+                style: TextStyle(color: Colors.grey.shade500))),
       ),
       data: (bikes) {
         final filtered = _selectedFilter == 'All'
@@ -646,7 +674,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
               padding: const EdgeInsets.all(40),
               child: Column(
                 children: [
-                  Icon(Icons.pedal_bike_outlined, size: 60, color: Colors.grey.shade300),
+                  Icon(Icons.pedal_bike_outlined,
+                      size: 60, color: Colors.grey.shade300),
                   const SizedBox(height: 12),
                   Text(
                     'No bikes available right now',
@@ -680,7 +709,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
   Widget _buildBikeCard(Map<String, dynamic> bike, bool isDark) {
     final type = bike['type'] as String? ?? 'standard';
     final rate = (bike['hourly_rate'] as num?)?.toDouble() ?? 0;
-    final shopName = (bike['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
+    final shopName =
+        (bike['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
     final shopLocation = (bike['shops'] as Map?)?['location'] as String? ?? '';
 
     final typeIcon = switch (type) {
@@ -729,18 +759,21 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
               child: Container(
                 decoration: BoxDecoration(
                   color: typeColor.withValues(alpha: 0.08),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Stack(
                   children: [
                     Center(
-                      child: Icon(typeIcon, size: 64, color: typeColor.withValues(alpha: 0.6)),
+                      child: Icon(typeIcon,
+                          size: 64, color: typeColor.withValues(alpha: 0.6)),
                     ),
                     Positioned(
                       top: 10,
                       right: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: typeColor,
                           borderRadius: BorderRadius.circular(8),
@@ -786,12 +819,14 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                     const SizedBox(height: 1),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 10, color: Colors.grey.shade400),
+                        Icon(Icons.location_on,
+                            size: 10, color: Colors.grey.shade400),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             shopLocation,
-                            style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 10),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -817,7 +852,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                           color: const Color(0xFF00C853),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.arrow_forward, color: Colors.white, size: 14),
+                        child: const Icon(Icons.arrow_forward,
+                            color: Colors.white, size: 14),
                       ),
                     ],
                   ),
@@ -834,7 +870,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
 
   void _showBookingBottomSheet(Map<String, dynamic> bike, bool isDark) {
     final rate = (bike['hourly_rate'] as num?)?.toDouble() ?? 0;
-    final shopName = (bike['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
+    final shopName =
+        (bike['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
     int selectedHours = 1;
 
     showModalBottomSheet(
@@ -860,7 +897,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
               // Handle
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
@@ -898,9 +936,12 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF00C853) : Colors.grey.withValues(alpha: 0.1),
+                        color: selected
+                            ? const Color(0xFF00C853)
+                            : Colors.grey.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -921,7 +962,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                 decoration: BoxDecoration(
                   color: const Color(0xFF00C853).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF00C853).withValues(alpha: 0.2)),
+                  border: Border.all(
+                      color: const Color(0xFF00C853).withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -952,10 +994,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    context.go('/booking', extra: {
-                      'bike': bike,
-                      'hours': selectedHours
-                    });
+                    context.go('/booking',
+                        extra: {'bike': bike, 'hours': selectedHours});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00C853),
@@ -1014,7 +1054,9 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF00C853).withValues(alpha: 0.1) : Colors.transparent,
+          color: selected
+              ? const Color(0xFF00C853).withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -1029,7 +1071,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
             Text(
               label,
               style: TextStyle(
-                color: selected ? const Color(0xFF00C853) : Colors.grey.shade400,
+                color:
+                    selected ? const Color(0xFF00C853) : Colors.grey.shade400,
                 fontSize: 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),

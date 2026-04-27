@@ -161,7 +161,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       String msg = e.toString();
       if (msg.contains('Invalid login')) msg = 'Wrong email or password.';
       if (msg.contains('already registered')) msg = 'Email already in use.';
-      if (msg.contains('Password should')) msg = 'Password must be 6+ characters.';
+      if (msg.contains('Password should')) {
+        msg = 'Password must be 6+ characters.';
+      }
 
       setState(() => _errorMsg = msg.replaceAll('Exception: ', ''));
       _shakeCtrl.forward(from: 0);
@@ -189,9 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: _bg,
-        body: isMobile
-            ? _buildMobileLayout()
-            : _buildDesktopLayout(size),
+        body: isMobile ? _buildMobileLayout() : _buildDesktopLayout(size),
       ),
     );
   }
@@ -431,8 +431,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(24),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
       ),
       child: Text(
         text,
@@ -502,8 +501,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
       ),
       child: Icon(icon,
-          color: Colors.white.withValues(alpha: 0.6),
-          size: size * 0.5),
+          color: Colors.white.withValues(alpha: 0.6), size: size * 0.5),
     );
   }
 
@@ -593,7 +591,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             suffix: GestureDetector(
               onTap: () => setState(() => _obscure = !_obscure),
               child: Icon(
-                _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscure
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: _textLight,
                 size: 20,
               ),
@@ -623,8 +623,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           if (_errorMsg != null) ...[
             const SizedBox(height: 16),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: _error.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
@@ -706,11 +705,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           const SizedBox(height: 20),
 
           // Divider
-          Row(
+          const Row(
             children: [
               Expanded(child: Divider(color: _border, thickness: 1)),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: EdgeInsets.symmetric(horizontal: 14),
                 child: Text('or',
                     style: TextStyle(color: _textLight, fontSize: 13)),
               ),
@@ -726,8 +725,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             height: 54,
             child: OutlinedButton.icon(
               onPressed: () => context.go('/home'),
-              icon: const Icon(Icons.explore_outlined,
-                  color: _textMid, size: 20),
+              icon:
+                  const Icon(Icons.explore_outlined, color: _textMid, size: 20),
               label: const Text(
                 'Browse without signing in',
                 style: TextStyle(
@@ -806,8 +805,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             style: TextStyle(
               color: selected ? _textDark : _textLight,
               fontSize: 13,
-              fontWeight:
-                  selected ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),
@@ -849,7 +847,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: _textLight, fontSize: 14),
+            hintStyle: const TextStyle(color: _textLight, fontSize: 14),
             prefixIcon: Padding(
               padding: const EdgeInsets.only(left: 14, right: 10),
               child: Icon(icon, color: _textLight, size: 20),
@@ -878,8 +876,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: _green, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           onSubmitted: (_) => _submit(),
         ),
@@ -904,8 +902,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             content: const Text('Reset link sent — check your email!'),
             backgroundColor: _green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }

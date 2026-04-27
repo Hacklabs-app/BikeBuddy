@@ -80,8 +80,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           unselectedLabelColor: _textLight,
           indicatorColor: _green,
           indicatorWeight: 2.5,
-          labelStyle: const TextStyle(
-              fontWeight: FontWeight.w700, fontSize: 13),
+          labelStyle:
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
@@ -89,16 +89,16 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         loading: () =>
             const Center(child: CircularProgressIndicator(color: _green)),
         error: (e, _) => Center(
-            child: Text('Error: $e',
-                style: const TextStyle(color: Colors.red))),
+            child:
+                Text('Error: $e', style: const TextStyle(color: Colors.red))),
         data: (rides) {
           if (rides.isEmpty) return _buildEmpty(isDark);
 
           // Stats header
           final completed =
               rides.where((r) => r['status'] == 'completed').toList();
-          final totalSpent = completed.fold(
-              0.0, (sum, r) => sum + ((r['total_cost'] as num?)?.toDouble() ?? 0));
+          final totalSpent = completed.fold(0.0,
+              (sum, r) => sum + ((r['total_cost'] as num?)?.toDouble() ?? 0));
           final totalRides = completed.length;
 
           return Column(children: [
@@ -109,8 +109,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
               child: Row(children: [
                 _statChip('$totalRides', 'Total Rides', _green, isDark),
                 const SizedBox(width: 12),
-                _statChip('\$${totalSpent.toStringAsFixed(2)}',
-                    'Total Spent', _amber, isDark),
+                _statChip('\$${totalSpent.toStringAsFixed(2)}', 'Total Spent',
+                    _amber, isDark),
                 const SizedBox(width: 12),
                 _statChip(
                     '${rides.where((r) => r['status'] == 'active' || r['status'] == 'reserved').length}',
@@ -149,8 +149,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     );
   }
 
-  Widget _statChip(
-      String value, String label, Color color, bool isDark) {
+  Widget _statChip(String value, String label, Color color, bool isDark) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -185,16 +184,13 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     final type = bike?['type'] as String? ?? 'standard';
     final shopName =
         (bike?['shops'] as Map?)?['name'] as String? ?? 'Unknown Shop';
-    final shopLocation =
-        (bike?['shops'] as Map?)?['location'] as String? ?? '';
+    final shopLocation = (bike?['shops'] as Map?)?['location'] as String? ?? '';
     final status = ride['status'] as String? ?? 'unknown';
-    final checkoutTime =
-        DateTime.parse(ride['checkout_time'] as String);
+    final checkoutTime = DateTime.parse(ride['checkout_time'] as String);
     final checkinTime = ride['checkin_time'] != null
         ? DateTime.parse(ride['checkin_time'] as String)
         : null;
-    final totalCost =
-        (ride['total_cost'] as num?)?.toDouble();
+    final totalCost = (ride['total_cost'] as num?)?.toDouble();
     final hourlyRate = (ride['hourly_rate'] as num?)?.toDouble() ?? 0;
 
     final statusColor = switch (status) {
@@ -276,8 +272,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                   ]),
             ),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8)),
@@ -295,18 +290,13 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         // Divider
         Divider(
             height: 1,
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.06)
-                : _border),
+            color: isDark ? Colors.white.withValues(alpha: 0.06) : _border),
 
         // Details row
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(children: [
-            _detailCol(
-                '📅 Date',
-                _formatDate(checkoutTime),
-                isDark),
+            _detailCol('📅 Date', _formatDate(checkoutTime), isDark),
             _vDivider(),
             _detailCol(
                 '⏱ Duration',
@@ -373,13 +363,11 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label,
             style: TextStyle(
-                color: isDark ? Colors.white38 : _textLight,
-                fontSize: 11)),
+                color: isDark ? Colors.white38 : _textLight, fontSize: 11)),
         const SizedBox(height: 4),
         Text(value,
             style: TextStyle(
-                color: valueColor ??
-                    (isDark ? Colors.white : _textDark),
+                color: valueColor ?? (isDark ? Colors.white : _textDark),
                 fontSize: 13,
                 fontWeight: FontWeight.w700)),
       ]),
@@ -388,7 +376,9 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
   Widget _vDivider() {
     return Container(
-        width: 1, height: 36, color: _border,
+        width: 1,
+        height: 36,
+        color: _border,
         margin: const EdgeInsets.symmetric(horizontal: 12));
   }
 
@@ -398,8 +388,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         padding: const EdgeInsets.all(40),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.history_rounded,
-              size: 64,
-              color: isDark ? Colors.white12 : Colors.grey.shade300),
+              size: 64, color: isDark ? Colors.white12 : Colors.grey.shade300),
           const SizedBox(height: 16),
           Text('No rides yet',
               style: TextStyle(
@@ -409,8 +398,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           const SizedBox(height: 8),
           Text('Your ride history will appear here',
               style: TextStyle(
-                  color: isDark ? Colors.white38 : _textLight,
-                  fontSize: 14)),
+                  color: isDark ? Colors.white38 : _textLight, fontSize: 14)),
           const SizedBox(height: 28),
           ElevatedButton.icon(
             onPressed: () => context.go('/home'),
@@ -421,8 +409,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             style: ElevatedButton.styleFrom(
                 backgroundColor: _green,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12))),
           ),
@@ -433,14 +421,28 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
   String _formatDate(DateTime dt) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour;
+    final h = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+            ? 12
+            : dt.hour;
     final m = dt.minute.toString().padLeft(2, '0');
     final suffix = dt.hour >= 12 ? 'PM' : 'AM';
     return '$h:$m $suffix';

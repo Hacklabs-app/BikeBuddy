@@ -23,8 +23,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Protected routes — require login
       final protectedRoutes = ['/booking', '/ride', '/scan', '/history'];
-      final isProtected = protectedRoutes
-          .any((r) => state.matchedLocation.startsWith(r));
+      final isProtected =
+          protectedRoutes.any((r) => state.matchedLocation.startsWith(r));
 
       if (!isLoggedIn && isProtected) return '/login';
       if (!isLoggedIn && !onHome && !onLogin) return '/home';
@@ -32,12 +32,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/login', builder: (context, _) => const LoginScreen()),
-      GoRoute(path: '/loading', builder: (context, _) => const _RoleRedirector()),
+      GoRoute(
+          path: '/loading', builder: (context, _) => const _RoleRedirector()),
       GoRoute(path: '/admin', builder: (context, _) => const AdminDashboard()),
       GoRoute(path: '/home', builder: (context, _) => const CustomerHome()),
       GoRoute(path: '/ride', builder: (context, _) => const ActiveRideScreen()),
       GoRoute(path: '/scan', builder: (context, _) => const ScanQrScreen()),
-      GoRoute(path: '/history', builder: (context, _) => const RideHistoryScreen()),
+      GoRoute(
+          path: '/history', builder: (context, _) => const RideHistoryScreen()),
       GoRoute(
         path: '/booking',
         builder: (context, state) {

@@ -23,8 +23,7 @@ double calculateBill(DateTime checkout, DateTime checkin, double hourlyRate) {
 }
 
 // ─── Active Rental Provider ───────────────────────────────────────────────────
-final activeRentalProvider =
-    FutureProvider<Map<String, dynamic>?>((ref) async {
+final activeRentalProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
   if (user == null) return null;
@@ -66,13 +65,13 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(
-        duration: const Duration(seconds: 2), vsync: this)
-      ..repeat(reverse: true);
+    _pulseCtrl =
+        AnimationController(duration: const Duration(seconds: 2), vsync: this)
+          ..repeat(reverse: true);
     _successCtrl = AnimationController(
         duration: const Duration(milliseconds: 900), vsync: this);
-    _pulseAnim = Tween<double>(begin: 0.8, end: 1.0).animate(
-        CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _pulseAnim = Tween<double>(begin: 0.8, end: 1.0)
+        .animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
     _scaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(parent: _successCtrl, curve: Curves.elasticOut));
   }
@@ -113,10 +112,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
 
     try {
       final now = DateTime.now();
-      final checkout =
-          DateTime.parse(rental['checkout_time'] as String);
-      final rate =
-          (rental['bikes']['hourly_rate'] as num).toDouble();
+      final checkout = DateTime.parse(rental['checkout_time'] as String);
+      final rate = (rental['bikes']['hourly_rate'] as num).toDouble();
       final bill = calculateBill(checkout, now, rate);
 
       await supabase.from('rentals').update({
@@ -125,9 +122,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
         'status': 'completed',
       }).eq('id', rental['id'] as String);
 
-      await supabase
-          .from('bikes')
-          .update({'status': 'available'}).eq('id', rental['bike_id'] as String);
+      await supabase.from('bikes').update({'status': 'available'}).eq(
+          'id', rental['bike_id'] as String);
 
       setState(() {
         _checkedIn = true;
@@ -175,15 +171,14 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
         loading: () =>
             const Center(child: CircularProgressIndicator(color: _green)),
         error: (e, _) => Center(
-            child: Text('Error: $e',
-                style: const TextStyle(color: Colors.red))),
+            child:
+                Text('Error: $e', style: const TextStyle(color: Colors.red))),
         data: (rental) {
           if (rental == null) return _buildNoActiveRide(isDark);
 
           // Start timer if not started
           if (_checkoutTime == null && !_checkedIn) {
-            final checkout =
-                DateTime.parse(rental['checkout_time'] as String);
+            final checkout = DateTime.parse(rental['checkout_time'] as String);
             WidgetsBinding.instance
                 .addPostFrameCallback((_) => _startTimer(checkout));
           }
@@ -209,10 +204,9 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-                color: _green.withValues(alpha: 0.1),
-                shape: BoxShape.circle),
-            child: const Icon(Icons.pedal_bike_outlined,
-                color: _green, size: 50),
+                color: _green.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child:
+                const Icon(Icons.pedal_bike_outlined, color: _green, size: 50),
           ),
           const SizedBox(height: 24),
           Text('No Active Ride',
@@ -237,8 +231,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
             style: ElevatedButton.styleFrom(
                 backgroundColor: _green,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 28, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14))),
           ),
@@ -254,10 +248,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
     final bikeName = bike['name'] as String? ?? 'Bike';
     final type = bike['type'] as String? ?? 'standard';
     final rate = (bike['hourly_rate'] as num).toDouble();
-    final shopName =
-        (bike['shops'] as Map?)?['name'] as String? ?? 'Shop';
-    final shopLocation =
-        (bike['shops'] as Map?)?['location'] as String? ?? '';
+    final shopName = (bike['shops'] as Map?)?['name'] as String? ?? 'Shop';
+    final shopLocation = (bike['shops'] as Map?)?['location'] as String? ?? '';
     final expectedReturn = rental['expected_return'] != null
         ? DateTime.parse(rental['expected_return'] as String)
         : null;
@@ -325,8 +317,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
                 const SizedBox(height: 24),
                 if (isLate)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20)),
@@ -354,8 +346,7 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
                       ? 'Scan QR code at the shop to start'
                       : 'Time on ride',
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 13),
+                      color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
                 ),
               ]),
             ),
@@ -452,12 +443,11 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
                       ? 'You were expected back at ${_formatTime(expectedReturn)}. Extra charges apply.'
                       : 'Expected return by ${_formatTime(expectedReturn)}',
                   style: TextStyle(
-                      color: isLate ? _red : (isDark ? Colors.white70 : _textDark),
+                      color:
+                          isLate ? _red : (isDark ? Colors.white70 : _textDark),
                       fontSize: 13,
                       height: 1.4,
-                      fontWeight: isLate
-                          ? FontWeight.w600
-                          : FontWeight.normal),
+                      fontWeight: isLate ? FontWeight.w600 : FontWeight.normal),
                 ),
               ),
             ]),
@@ -494,9 +484,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
             width: double.infinity,
             height: 60,
             child: ElevatedButton.icon(
-              onPressed: _checkingIn
-                  ? null
-                  : () => _showCheckInConfirm(rental, rate),
+              onPressed:
+                  _checkingIn ? null : () => _showCheckInConfirm(rental, rate),
               icon: _checkingIn
                   ? const SizedBox(
                       width: 20,
@@ -523,7 +512,7 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
             ),
           ),
           const SizedBox(height: 12),
-          Center(
+          const Center(
             child: Text('Tap when you\'ve returned the bike to the shop',
                 style: TextStyle(color: _textLight, fontSize: 12)),
           ),
@@ -571,8 +560,7 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                  color: _border,
-                  borderRadius: BorderRadius.circular(2))),
+                  color: _border, borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 20),
           const Icon(Icons.flag_rounded, color: _green, size: 40),
           const SizedBox(height: 16),
@@ -660,8 +648,8 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
                     offset: const Offset(0, 12))
               ],
             ),
-            child: const Icon(Icons.check_rounded,
-                color: Colors.white, size: 60),
+            child:
+                const Icon(Icons.check_rounded, color: Colors.white, size: 60),
           ),
         ),
         const SizedBox(height: 32),
@@ -687,7 +675,7 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
             border: Border.all(color: _green.withValues(alpha: 0.3)),
           ),
           child: Column(children: [
-            Text('RECEIPT',
+            const Text('RECEIPT',
                 style: TextStyle(
                     color: _textLight,
                     fontSize: 11,
@@ -721,7 +709,7 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
                       letterSpacing: -1)),
             ]),
             const SizedBox(height: 8),
-            Text('Pay at the shop counter',
+            const Text('Pay at the shop counter',
                 style: TextStyle(color: _textLight, fontSize: 12)),
           ]),
         ),

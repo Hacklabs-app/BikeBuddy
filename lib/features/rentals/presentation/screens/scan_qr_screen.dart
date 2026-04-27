@@ -31,17 +31,17 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
   @override
   void initState() {
     super.initState();
-    _scanLineCtrl = AnimationController(
-        duration: const Duration(seconds: 2), vsync: this)
-      ..repeat(reverse: true);
+    _scanLineCtrl =
+        AnimationController(duration: const Duration(seconds: 2), vsync: this)
+          ..repeat(reverse: true);
     _pulseCtrl = AnimationController(
         duration: const Duration(milliseconds: 1500), vsync: this)
       ..repeat(reverse: true);
 
     _scanLineAnim = Tween<double>(begin: 0.05, end: 0.95).animate(
         CurvedAnimation(parent: _scanLineCtrl, curve: Curves.easeInOut));
-    _pulseAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
-        CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _pulseAnim = Tween<double>(begin: 0.6, end: 1.0)
+        .animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -145,8 +145,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                  color: _green, shape: BoxShape.circle),
+              decoration:
+                  const BoxDecoration(color: _green, shape: BoxShape.circle),
               child: const Icon(Icons.check_rounded,
                   color: Colors.white, size: 44),
             ),
@@ -234,8 +234,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
                       borderRadius: BorderRadius.circular(1),
                       boxShadow: [
                         BoxShadow(
-                            color: _green.withValues(alpha: 0.5),
-                            blurRadius: 8)
+                            color: _green.withValues(alpha: 0.5), blurRadius: 8)
                       ],
                     ),
                   ),
@@ -320,8 +319,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
                   decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.red.withValues(alpha: 0.4))),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.4))),
                   child: Row(children: [
                     const Icon(Icons.error_outline,
                         color: Colors.red, size: 18),
@@ -346,13 +345,11 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
                   decoration: BoxDecoration(
                       color: _green.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: _green.withValues(alpha: 0.3))),
+                      border: Border.all(color: _green.withValues(alpha: 0.3))),
                   child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.qr_code_scanner,
-                            color: _green, size: 18),
+                        Icon(Icons.qr_code_scanner, color: _green, size: 18),
                         SizedBox(width: 10),
                         Text('Point at the bike\'s QR code to start',
                             style: TextStyle(
@@ -378,16 +375,14 @@ class _ScanOverlayPainter extends CustomPainter {
     final scanSize = size.width * 0.7;
     final left = (size.width - scanSize) / 2;
     final top = (size.height - scanSize) / 2;
-    final scanRect =
-        Rect.fromLTWH(left, top, scanSize, scanSize);
+    final scanRect = Rect.fromLTWH(left, top, scanSize, scanSize);
 
     final paint = Paint()..color = Colors.black.withValues(alpha: 0.6);
     final fullRect = Rect.fromLTWH(0, 0, size.width, size.height);
 
     final path = Path()
       ..addRect(fullRect)
-      ..addRRect(
-          RRect.fromRectAndRadius(scanRect, const Radius.circular(16)))
+      ..addRRect(RRect.fromRectAndRadius(scanRect, const Radius.circular(16)))
       ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);
@@ -415,25 +410,22 @@ class _CornerPainter extends CustomPainter {
     // Top-left
     canvas.drawLine(const Offset(r, 0), const Offset(r + len, 0), paint);
     canvas.drawLine(const Offset(0, r), const Offset(0, r + len), paint);
-    canvas.drawArc(const Rect.fromLTWH(0, 0, r * 2, r * 2),
-        3.14159, 3.14159 / 2, false, paint);
+    canvas.drawArc(const Rect.fromLTWH(0, 0, r * 2, r * 2), 3.14159,
+        3.14159 / 2, false, paint);
 
     // Top-right
     canvas.drawLine(
         Offset(size.width - r, 0), Offset(size.width - r - len, 0), paint);
-    canvas.drawLine(
-        Offset(size.width, r), Offset(size.width, r + len), paint);
-    canvas.drawArc(
-        Rect.fromLTWH(size.width - r * 2, 0, r * 2, r * 2),
+    canvas.drawLine(Offset(size.width, r), Offset(size.width, r + len), paint);
+    canvas.drawArc(Rect.fromLTWH(size.width - r * 2, 0, r * 2, r * 2),
         -3.14159 / 2, 3.14159 / 2, false, paint);
 
     // Bottom-left
-    canvas.drawLine(Offset(r, size.height),
-        Offset(r + len, size.height), paint);
-    canvas.drawLine(Offset(0, size.height - r),
-        Offset(0, size.height - r - len), paint);
-    canvas.drawArc(
-        Rect.fromLTWH(0, size.height - r * 2, r * 2, r * 2),
+    canvas.drawLine(
+        Offset(r, size.height), Offset(r + len, size.height), paint);
+    canvas.drawLine(
+        Offset(0, size.height - r), Offset(0, size.height - r - len), paint);
+    canvas.drawArc(Rect.fromLTWH(0, size.height - r * 2, r * 2, r * 2),
         3.14159 / 2, 3.14159 / 2, false, paint);
 
     // Bottom-right
@@ -442,9 +434,11 @@ class _CornerPainter extends CustomPainter {
     canvas.drawLine(Offset(size.width, size.height - r),
         Offset(size.width, size.height - r - len), paint);
     canvas.drawArc(
-        Rect.fromLTWH(
-            size.width - r * 2, size.height - r * 2, r * 2, r * 2),
-        0, 3.14159 / 2, false, paint);
+        Rect.fromLTWH(size.width - r * 2, size.height - r * 2, r * 2, r * 2),
+        0,
+        3.14159 / 2,
+        false,
+        paint);
   }
 
   @override

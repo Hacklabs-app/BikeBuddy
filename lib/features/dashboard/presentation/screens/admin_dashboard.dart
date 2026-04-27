@@ -19,8 +19,8 @@ final adminShopProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   return data;
 });
 
-final fleetProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, shopId) async {
+final fleetProvider = FutureProvider.family<List<Map<String, dynamic>>, String>(
+    (ref, shopId) async {
   final data = await _supabase
       .from('bikes')
       .select()
@@ -30,7 +30,8 @@ final fleetProvider =
 });
 
 final activeRentalsProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, shopId) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, shopId) async {
   final data = await _supabase
       .from('rentals')
       .select('*, profiles(full_name, email)')
@@ -219,8 +220,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                           color: _green.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child:
-                            const Icon(Icons.store, color: _green, size: 16),
+                        child: const Icon(Icons.store, color: _green, size: 16),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -279,9 +279,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                             style: TextStyle(
                               color: selected ? _green : _textSecondary,
                               fontSize: 13,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
+                              fontWeight:
+                                  selected ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                           if (i == 2) ...[
@@ -355,8 +354,18 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
     final now = DateTime.now();
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final months = [
-      'Jan','Feb','Mar','Apr','May','Jun',
-      'Jul','Aug','Sep','Oct','Nov','Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final dateStr =
         '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day} ${now.year}';
@@ -383,8 +392,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
           Container(
               width: 6,
               height: 6,
-              decoration: const BoxDecoration(
-                  color: _border, shape: BoxShape.circle)),
+              decoration:
+                  const BoxDecoration(color: _border, shape: BoxShape.circle)),
           const SizedBox(width: 12),
           Text(dateStr,
               style: const TextStyle(color: _textSecondary, fontSize: 13)),
@@ -409,8 +418,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
           GestureDetector(
             onTap: () => _showAddBikeSheet(shopId),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: _green,
                 borderRadius: BorderRadius.circular(8),
@@ -465,27 +473,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
               final total = fleet.length;
               final available =
                   fleet.where((b) => b['status'] == 'available').length;
-              final rented =
-                  fleet.where((b) => b['status'] == 'rented').length;
+              final rented = fleet.where((b) => b['status'] == 'rented').length;
               final maintenance =
                   fleet.where((b) => b['status'] == 'maintenance').length;
-              final utilization = total > 0
-                  ? (rented / total * 100).toStringAsFixed(0)
-                  : '0';
+              final utilization =
+                  total > 0 ? (rented / total * 100).toStringAsFixed(0) : '0';
               return Row(
                 children: [
-                  _kpiCard('Total Fleet', '$total', Icons.pedal_bike,
-                      _blue, null),
+                  _kpiCard(
+                      'Total Fleet', '$total', Icons.pedal_bike, _blue, null),
                   const SizedBox(width: 16),
-                  _kpiCard('Available', '$available',
-                      Icons.check_circle_outline, _green,
+                  _kpiCard(
+                      'Available',
+                      '$available',
+                      Icons.check_circle_outline,
+                      _green,
                       '$available of $total ready'),
                   const SizedBox(width: 16),
-                  _kpiCard('On Ride', '$rented', Icons.directions_bike,
-                      _amber, 'Utilization: $utilization%'),
+                  _kpiCard('On Ride', '$rented', Icons.directions_bike, _amber,
+                      'Utilization: $utilization%'),
                   const SizedBox(width: 16),
-                  _kpiCard('Maintenance', '$maintenance',
-                      Icons.build_outlined, _red, 'Needs attention'),
+                  _kpiCard('Maintenance', '$maintenance', Icons.build_outlined,
+                      _red, 'Needs attention'),
                 ],
               );
             },
@@ -572,9 +581,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
               const SizedBox(height: 8),
               Text(subtitle,
                   style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600)),
+                      color: color, fontSize: 11, fontWeight: FontWeight.w600)),
             ],
           ],
         ),
@@ -689,8 +696,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
       decoration: BoxDecoration(
         color: isLate ? _red.withValues(alpha: 0.08) : _surfaceAlt,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-            color: isLate ? _red.withValues(alpha: 0.3) : _border),
+        border:
+            Border.all(color: isLate ? _red.withValues(alpha: 0.3) : _border),
       ),
       child: Row(
         children: [
@@ -724,8 +731,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                   style: TextStyle(
                     color: isLate ? _red : _textSecondary,
                     fontSize: 11,
-                    fontWeight:
-                        isLate ? FontWeight.w700 : FontWeight.normal,
+                    fontWeight: isLate ? FontWeight.w700 : FontWeight.normal,
                   ),
                 ),
               ],
@@ -813,8 +819,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
-        border: Border(
-            bottom: BorderSide(color: _border.withValues(alpha: 0.5))),
+        border:
+            Border(bottom: BorderSide(color: _border.withValues(alpha: 0.5))),
       ),
       child: Row(
         children: [
@@ -828,13 +834,11 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
           Expanded(
               flex: 2,
               child: Text(typeLabel,
-                  style: const TextStyle(
-                      color: _textSecondary, fontSize: 12))),
+                  style: const TextStyle(color: _textSecondary, fontSize: 12))),
           Expanded(
             flex: 2,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6),
@@ -893,8 +897,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
       padding: const EdgeInsets.all(24),
       child: fleetAsync.when(
         loading: () => const _LoadingCard(),
-        error: (e, _) =>
-            Text('Error: $e', style: const TextStyle(color: _red)),
+        error: (e, _) => Text('Error: $e', style: const TextStyle(color: _red)),
         data: (fleet) => _fleetTable(fleet, shopId),
       ),
     );
@@ -908,8 +911,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
       padding: const EdgeInsets.all(24),
       child: rentalsAsync.when(
         loading: () => const _LoadingCard(),
-        error: (e, _) =>
-            Text('Error: $e', style: const TextStyle(color: _red)),
+        error: (e, _) => Text('Error: $e', style: const TextStyle(color: _red)),
         data: (rentals) => Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -950,8 +952,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
       padding: const EdgeInsets.all(24),
       child: revenueAsync.when(
         loading: () => const _LoadingCard(),
-        error: (e, _) =>
-            Text('Error: $e', style: const TextStyle(color: _red)),
+        error: (e, _) => Text('Error: $e', style: const TextStyle(color: _red)),
         data: (rev) => Row(
           children: [
             _bigRevenueCard('Today', rev['daily'] ?? 0, _green, Icons.today),
@@ -990,8 +991,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                     letterSpacing: -1)),
             const SizedBox(height: 4),
             Text(label,
-                style:
-                    const TextStyle(color: _textSecondary, fontSize: 13)),
+                style: const TextStyle(color: _textSecondary, fontSize: 13)),
           ],
         ),
       ),
@@ -1054,8 +1054,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
               const SizedBox(height: 20),
               _field('Bike Name', nameCtrl, 'e.g. Trek FX3'),
               const SizedBox(height: 12),
-              _field('Hourly Rate (\$)', rateCtrl, 'e.g. 10',
-                  isNumber: true),
+              _field('Hourly Rate (\$)', rateCtrl, 'e.g. 10', isNumber: true),
               const SizedBox(height: 12),
               const Text('Type',
                   style: TextStyle(color: _textSecondary, fontSize: 13)),
@@ -1063,8 +1062,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: ['standard', 'electric', 'mountainBike', 'city']
-                      .map((t) {
+                  children:
+                      ['standard', 'electric', 'mountainBike', 'city'].map((t) {
                     final labels = {
                       'standard': '🚲 Standard',
                       'electric': '⚡ Electric',
@@ -1084,8 +1083,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                               ? _green.withValues(alpha: 0.15)
                               : _surfaceAlt,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: sel ? _green : _border),
+                          border: Border.all(color: sel ? _green : _border),
                         ),
                         child: Text(labels[t]!,
                             style: TextStyle(
@@ -1124,8 +1122,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text('Add to Fleet',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -1145,8 +1143,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
         const SizedBox(height: 6),
         TextField(
           controller: ctrl,
-          keyboardType:
-              isNumber ? TextInputType.number : TextInputType.text,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
           style: const TextStyle(color: _textPrimary, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -1163,8 +1160,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                 borderRadius: BorderRadius.circular(10),
                 borderSide: const BorderSide(color: _green)),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
         ),
       ],
