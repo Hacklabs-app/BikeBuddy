@@ -257,12 +257,6 @@ class _ActiveRideScreenState extends ConsumerState<ActiveRideScreen>
         expectedReturn != null && DateTime.now().isAfter(expectedReturn);
     final status = rental['status'] as String;
 
-    final typeColor = switch (type) {
-      'electric' => const Color(0xFF2979FF),
-      'mountainBike' => const Color(0xFFFF6D00),
-      'city' => const Color(0xFF9C27B0),
-      _ => _green,
-    };
     final typeIcon = switch (type) {
       'electric' => Icons.electric_bike,
       'mountainBike' => Icons.terrain,
