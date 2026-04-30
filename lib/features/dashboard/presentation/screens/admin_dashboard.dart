@@ -1109,7 +1109,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
                       'status': 'available',
                       'hourly_rate': double.tryParse(rateCtrl.text) ?? 0,
                     });
-                    if (mounted) {
+                    if (context.mounted) {
                       Navigator.pop(context);
                       ref.invalidate(fleetProvider(shopId));
                     }

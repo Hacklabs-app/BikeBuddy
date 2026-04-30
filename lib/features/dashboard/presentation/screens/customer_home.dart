@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../shared/providers/auth_provider.dart';
 
 // ─── Providers ───────────────────────────────────────────────────────────────
 
@@ -1021,6 +1023,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
   // ── Bottom Nav ──────────────────────────────────────────────────────────────
 
   Widget _buildBottomNav(bool isDark) {
+    final isLoggedIn = ref.watch(authStateProvider).valueOrNull != null;
+
     return Container(
       height: 72,
       decoration: BoxDecoration(
@@ -1040,16 +1044,89 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
           _navItem(Icons.map_outlined, 'Map', 1, isDark),
           const SizedBox(width: 60), // FAB space
           _navItem(Icons.history_rounded, 'History', 2, isDark),
-          _navItem(Icons.person_outline_rounded, 'Profile', 3, isDark),
+          _navItem(
+            Icons.person_outline_rounded,
+            'Profile',
+            3,
+            isDark,
+            onTap: () => isLoggedIn
+                ? _showProfileSheet(isDark)
+                : context.go('/login'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index, bool isDark) {
+  void _showProfileSheet(bool isDark) {
+    final user = supabase.auth.currentUser;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C2128) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            CircleAvatar(
+              radius: 32,
+              backgroundColor:
+                  const Color(0xFF00C853).withValues(alpha: 0.12),
+              child: const Icon(Icons.person,
+                  color: Color(0xFF00C853), size: 36),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              user?.email ?? '',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0D1117),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await supabase.auth.signOut();
+                },
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Sign Out'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, String label, int index, bool isDark,
+      {VoidCallback? onTap}) {
     final selected = _selectedTab == index;
     return GestureDetector(
-      onTap: () => setState(() => _selectedTab = index),
+      onTap: onTap ?? () => setState(() => _selectedTab = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

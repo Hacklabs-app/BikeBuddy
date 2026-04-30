@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../shared/providers/auth_provider.dart';
 import '../core/models/user_model.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
-import '../features/admin/dashboard/admin_dashboard.dart';
-import '../features/customer/home/customer_home.dart';
-import '../features/customer/booking/booking_confirm_screen.dart';
-import '../features/customer/ride/active_ride_screen.dart';
-import '../features/customer/ride/scan_qr_screen.dart';
-import '../features/customer/history/ride_history_screen.dart';
+import '../features/dashboard/presentation/screens/admin_dashboard.dart';
+import '../features/dashboard/presentation/screens/customer_home.dart';
+import '../features/rentals/presentation/screens/booking_confirm_screen.dart';
+import '../features/rentals/presentation/screens/active_ride_screen.dart';
+import '../features/rentals/presentation/screens/scan_qr_screen.dart';
+import '../features/rentals/presentation/screens/ride_history_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -18,8 +18,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/home',
     redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull != null;
-      final onHome = state.matchedLocation == '/home';
       final onLogin = state.matchedLocation == '/login';
+
+      // Logged-in users visiting /login get routed to their dashboard
+      if (isLoggedIn && onLogin) return '/loading';
 
       // Protected routes — require login
       final protectedRoutes = ['/booking', '/ride', '/scan', '/history'];
@@ -27,7 +29,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           protectedRoutes.any((r) => state.matchedLocation.startsWith(r));
 
       if (!isLoggedIn && isProtected) return '/login';
-      if (!isLoggedIn && !onHome && !onLogin) return '/home';
       return null;
     },
     routes: [
