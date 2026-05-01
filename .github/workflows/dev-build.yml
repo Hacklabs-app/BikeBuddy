@@ -1,7 +1,10 @@
 name: Dev Build
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches:
       - dev
 
@@ -12,10 +15,13 @@ jobs:
   build:
     name: Build & Pre-release APK
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -72,4 +78,4 @@ jobs:
 
             - Branch: `dev`
             - Build: `#${{ github.run_number }}`
-            - Commit: `${{ github.sha }}`
+            - Commit: `${{ github.event.workflow_run.head_sha }}`
