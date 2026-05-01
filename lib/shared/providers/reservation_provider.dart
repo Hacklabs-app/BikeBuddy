@@ -23,11 +23,12 @@ class ReservationState {
     String? reservationId,
     DateTime? expiresAt,
     bool? isExpired,
-  }) => ReservationState(
-    reservationId: reservationId ?? this.reservationId,
-    expiresAt: expiresAt ?? this.expiresAt,
-    isExpired: isExpired ?? this.isExpired,
-  );
+  }) =>
+      ReservationState(
+        reservationId: reservationId ?? this.reservationId,
+        expiresAt: expiresAt ?? this.expiresAt,
+        isExpired: isExpired ?? this.isExpired,
+      );
 }
 
 class ReservationNotifier extends StateNotifier<ReservationState> {
@@ -42,12 +43,16 @@ class ReservationNotifier extends StateNotifier<ReservationState> {
       // Mark bike as reserved in bikes table
       await _db.from('bikes').update({'status': 'reserved'}).eq('id', bikeId);
 
-      final res = await _db.from('reservations').insert({
-        'bike_id': bikeId,
-        'user_id': userId,
-        'expires_at': expiresAt.toIso8601String(),
-        'status': 'active',
-      }).select().single();
+      final res = await _db
+          .from('reservations')
+          .insert({
+            'bike_id': bikeId,
+            'user_id': userId,
+            'expires_at': expiresAt.toIso8601String(),
+            'status': 'active',
+          })
+          .select()
+          .single();
 
       state = ReservationState(
         reservationId: res['id'],
@@ -79,9 +84,9 @@ class ReservationNotifier extends StateNotifier<ReservationState> {
   Future<void> _expire() async {
     _ticker?.cancel();
     if (state.reservationId != null) {
-      await _db.from('reservations')
-        .update({'status': 'expired'})
-        .eq('id', state.reservationId!);
+      await _db
+          .from('reservations')
+          .update({'status': 'expired'}).eq('id', state.reservationId!);
     }
     state = const ReservationState(isExpired: true);
   }
@@ -89,9 +94,9 @@ class ReservationNotifier extends StateNotifier<ReservationState> {
   Future<void> cancelReservation() async {
     _ticker?.cancel();
     if (state.reservationId != null) {
-      await _db.from('reservations')
-        .update({'status': 'expired'})
-        .eq('id', state.reservationId!);
+      await _db
+          .from('reservations')
+          .update({'status': 'expired'}).eq('id', state.reservationId!);
     }
     state = const ReservationState();
   }
