@@ -218,7 +218,37 @@ If a request touches any of these, flag it and refer to the spec.
 
 - Branch from `dev`, never from `main`
 - Branch naming: `feature/short-description`, `fix/short-description`
-- Commit messages must follow Conventional Commits: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`
 - One PR per issue. Link the issue in the PR description.
 - Never push directly to `dev` or `main`
 - Never use `--no-verify` to skip hooks
+
+### Commit message format
+
+All commits must follow Conventional Commits. commitlint enforces this on every PR — non-compliant messages will block the merge.
+
+```
+<type>: <short description in lowercase>
+
+Examples:
+feat: add checkout screen
+fix: correct billing calculation for fractional hours
+chore: fix typo in button label
+refactor: extract rental list item widget
+docs: update setup instructions
+test: add unit tests for billing calculator
+ci: update flutter version in workflow
+```
+
+**Commit types and their version impact:**
+
+| Type | Bumps version | When to use |
+|---|---|---|
+| `feat:` | Yes — minor (`1.0.0 → 1.1.0`) | Something new that didn't exist before |
+| `fix:` | Yes — patch (`1.0.0 → 1.0.1`) | Something was broken and now works correctly |
+| `chore:` | No | Typos, formatting, config changes, dependency updates |
+| `refactor:` | No | Code restructured but behaviour unchanged |
+| `docs:` | No | Documentation only |
+| `test:` | No | Adding or updating tests |
+| `ci:` | No | Workflow and pipeline changes |
+
+**Important:** `fix:` is for broken behaviour, not typos. A typo in a label is `chore:`, not `fix:`. Using `fix:` for trivial changes creates unnecessary patch releases.
