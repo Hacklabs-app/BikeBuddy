@@ -27,5 +27,4 @@ jobs:
             docs
             refactor
             test
-            style
             ci

@@ -11,7 +11,9 @@ plugins {
 private val keystoreProperties = Properties().also { props ->
     val keystorePropertiesFile = rootProject.file("key.properties")
     if (keystorePropertiesFile.exists()) {
-        props.load(FileInputStream(keystorePropertiesFile))
+        FileInputStream(keystorePropertiesFile).use { input ->
+            props.load(input)
+        }
     }
 }
 

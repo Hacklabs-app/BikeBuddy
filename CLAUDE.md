@@ -224,7 +224,7 @@ If a request touches any of these, flag it and refer to the spec.
 
 ### Commit message format
 
-All commits must follow Conventional Commits. commitlint enforces this on every PR — non-compliant messages will block the merge.
+PR titles should follow Conventional Commits. The PR title is validated on every PR and will typically become the squash-merge commit title, so non-compliant titles can block the merge.
 
 ```
 <type>: <short description in lowercase>
