@@ -4,7 +4,7 @@
 
 ## Linked issue
 
-closes #
+Closes #<issue-number>
 
 ## Type of change
 
