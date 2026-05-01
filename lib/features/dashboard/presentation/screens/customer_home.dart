@@ -1049,9 +1049,8 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
             'Profile',
             3,
             isDark,
-            onTap: () => isLoggedIn
-                ? _showProfileSheet(isDark)
-                : context.go('/login'),
+            onTap: () =>
+                isLoggedIn ? _showProfileSheet(isDark) : context.go('/login'),
           ),
         ],
       ),
@@ -1083,10 +1082,9 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
             const SizedBox(height: 20),
             CircleAvatar(
               radius: 32,
-              backgroundColor:
-                  const Color(0xFF00C853).withValues(alpha: 0.12),
-              child: const Icon(Icons.person,
-                  color: Color(0xFF00C853), size: 36),
+              backgroundColor: const Color(0xFF00C853).withValues(alpha: 0.12),
+              child:
+                  const Icon(Icons.person, color: Color(0xFF00C853), size: 36),
             ),
             const SizedBox(height: 12),
             Text(

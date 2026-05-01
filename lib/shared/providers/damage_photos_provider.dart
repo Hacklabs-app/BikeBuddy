@@ -21,7 +21,8 @@ class DamagePhotosNotifier extends StateNotifier<List<String>> {
     if (picked == null) return;
 
     final file = File(picked.path);
-    final fileName = '$userId/$rentalId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final fileName =
+        '$userId/$rentalId/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
     await _storage.from('damage-photos').upload(fileName, file);
     final url = _storage.from('damage-photos').getPublicUrl(fileName);

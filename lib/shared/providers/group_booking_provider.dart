@@ -28,13 +28,17 @@ class GroupBookingNotifier extends StateNotifier<List<BikeModel>> {
 
     // Batch insert — one rental per bike
     for (final bike in state) {
-      final res = await db.from('rentals').insert({
-        'user_id': userId,
-        'bike_id': bike.id,
-        'shop_id': bike.shopId,
-        'status': 'reserved',
-        'start_time': startTime.toIso8601String(),
-      }).select().single();
+      final res = await db
+          .from('rentals')
+          .insert({
+            'user_id': userId,
+            'bike_id': bike.id,
+            'shop_id': bike.shopId,
+            'status': 'reserved',
+            'start_time': startTime.toIso8601String(),
+          })
+          .select()
+          .single();
       rentalIds.add(res['id']);
     }
     clear();
