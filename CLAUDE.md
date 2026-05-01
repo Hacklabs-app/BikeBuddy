@@ -250,5 +250,6 @@ ci: update flutter version in workflow
 | `docs:` | No | Documentation only |
 | `test:` | No | Adding or updating tests |
 | `ci:` | No | Workflow and pipeline changes |
+| `style:` | No | Formatting, whitespace, missing semicolons — no logic change |
 
 **Important:** `fix:` is for broken behaviour, not typos. A typo in a label is `chore:`, not `fix:`. Using `fix:` for trivial changes creates unnecessary patch releases.
