@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    name: Lint & Test
     runs-on: ubuntu-latest
 
     steps:
