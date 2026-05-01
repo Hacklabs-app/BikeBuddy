@@ -1,0 +1,9 @@
+{
+  "release-type": "dart",
+  "packages": {
+    ".": {
+      "release-type": "dart",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
