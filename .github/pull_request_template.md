@@ -4,7 +4,7 @@
 
 ## Linked issue
 
-Closes #
+closes #
 
 ## Type of change
 
