@@ -36,10 +36,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   bool _loading = false;
   bool _obscure = true;
   String? _errorMsg;
+  String _selectedRole = 'customer';
 
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
+  final _nationalIdCtrl = TextEditingController();
   final _emailFocus = FocusNode();
   final _passFocus = FocusNode();
 
@@ -98,6 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _nameCtrl.dispose();
+    _nationalIdCtrl.dispose();
     _emailFocus.dispose();
     _passFocus.dispose();
     super.dispose();
@@ -122,7 +125,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         if (res.user == null) throw Exception('Login failed');
 
-        // Fetch role and redirect
         final profile = await supabase
             .from('profiles')
             .select('role')
@@ -131,31 +133,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         if (mounted) {
           final role = profile?['role'] as String? ?? 'customer';
-          context.go(role == 'admin' ? '/admin' : '/home');
+          context.go(role == 'owner' ? '/admin' : '/home');
         }
       } else {
-        // Sign up
         if (_nameCtrl.text.trim().isEmpty) {
           throw Exception('Please enter your full name');
         }
+        if (_nationalIdCtrl.text.trim().isEmpty) {
+          throw Exception('Please enter your national ID number');
+        }
 
+        // Profile row is created automatically by the handle_new_user DB trigger.
         final res = await supabase.auth.signUp(
           email: _emailCtrl.text.trim(),
           password: _passCtrl.text,
-          data: {'full_name': _nameCtrl.text.trim()},
+          data: {
+            'full_name': _nameCtrl.text.trim(),
+            'id_number': _nationalIdCtrl.text.trim(),
+            'role': _selectedRole,
+          },
         );
 
         if (res.user == null) throw Exception('Sign up failed');
 
-        // Insert profile row
-        await supabase.from('profiles').upsert({
-          'id': res.user!.id,
-          'email': _emailCtrl.text.trim(),
-          'full_name': _nameCtrl.text.trim(),
-          'role': 'customer',
-        });
-
-        if (mounted) context.go('/home');
+        if (mounted) context.go(_selectedRole == 'owner' ? '/admin' : '/home');
       }
     } catch (e) {
       String msg = e.toString();
@@ -176,6 +177,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() {
       _mode = _mode == _AuthMode.login ? _AuthMode.signup : _AuthMode.login;
       _errorMsg = null;
+      _selectedRole = 'customer';
+      _nationalIdCtrl.clear();
     });
     _enterCtrl.forward(from: 0.6);
   }
@@ -558,7 +561,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
           const SizedBox(height: 32),
 
-          // Name field (signup only)
+          // Signup-only fields
           if (!isLogin) ...[
             _inputField(
               label: 'Full Name',
@@ -566,6 +569,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               controller: _nameCtrl,
               icon: Icons.person_outline,
             ),
+            const SizedBox(height: 16),
+            _inputField(
+              label: 'National ID Number',
+              hint: 'e.g. 12345678',
+              controller: _nationalIdCtrl,
+              icon: Icons.badge_outlined,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            _roleSelector(),
             const SizedBox(height: 16),
           ],
 
@@ -807,6 +820,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               fontSize: 13,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _roleSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'I am a',
+          style: TextStyle(
+            color: _textMid,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: _bg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _border, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              _roleTab('Customer', 'customer', Icons.person_outline),
+              _roleTab('Shop Owner', 'owner', Icons.store_outlined),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _roleTab(String label, String value, IconData icon) {
+    final selected = _selectedRole == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedRole = value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? _green : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: _green.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: selected ? Colors.white : _textLight,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : _textLight,
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -77,7 +77,7 @@ class _RoleRedirector extends ConsumerWidget {
           return const SizedBox();
         }
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (user.role == UserRole.admin) {
+          if (user.role == UserRole.owner) {
             context.go('/admin');
           } else {
             context.go('/home');
