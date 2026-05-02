@@ -17,23 +17,23 @@ class ChatMessage {
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> map) => ChatMessage(
-    id: map['id'],
-    senderId: map['sender_id'],
-    senderRole: map['sender_role'],
-    content: map['content'],
-    createdAt: DateTime.parse(map['created_at']),
-  );
+        id: map['id'],
+        senderId: map['sender_id'],
+        senderRole: map['sender_role'],
+        content: map['content'],
+        createdAt: DateTime.parse(map['created_at']),
+      );
 }
 
 // Stream of messages for a given rental
 final chatStreamProvider = StreamProvider.family<List<ChatMessage>, String>(
   (ref, rentalId) {
     return Supabase.instance.client
-      .from('messages')
-      .stream(primaryKey: ['id'])
-      .eq('rental_id', rentalId)
-      .order('created_at')
-      .map((rows) => rows.map(ChatMessage.fromMap).toList());
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .eq('rental_id', rentalId)
+        .order('created_at')
+        .map((rows) => rows.map(ChatMessage.fromMap).toList());
   },
 );
 

@@ -59,7 +59,8 @@ doc/api/
 
 # dotenv environment variables file
 .env*
-
+.env.dev
+.env.prod
 # Avoid committing generated Javascript files:
 *.dart.js
 # Produced by the --dump-info flag.
@@ -77,4 +78,3 @@ doc/api/
 
 # FVM Version Cache
 .fvm/
-notes/
