@@ -32,13 +32,27 @@ fvm install
 
 # Fetch the project dependencies
 fvm flutter pub get
-
-# Run the project
-fvm flutter run
 ```
 
+### 4. Set Up Local Environment Variables
 
-### 4. Configure Your IDE
+Supabase credentials are injected at build time and are never committed to the repo. Create a `.env.json` file in the project root (it is gitignored):
+
+```json
+{
+  "SUPABASE_URL": "your_supabase_url",
+  "SUPABASE_ANON_KEY": "your_anon_key"
+}
+```
+
+Get these values from your Supabase project dashboard under **Project Settings → API**.
+
+Then run the app with:
+```bash
+fvm flutter run --dart-define-from-file=.env.json
+```
+
+### 5. Configure Your IDE
 To ensure your IDE uses the correct Flutter version, you **must** manually configure your workspace:
 
 #### For VS Code:

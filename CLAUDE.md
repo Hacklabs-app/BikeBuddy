@@ -95,7 +95,8 @@ All routes are defined in `lib/app/router.dart`. Auth guards (redirects based on
 
 ## Supabase Rules
 
-- **Never hardcode** `SUPABASE_URL` or `SUPABASE_ANON_KEY`. They are injected via `--dart-define` at build time.
+- **Never hardcode** `SUPABASE_URL` or `SUPABASE_ANON_KEY`. They are injected via `--dart-define` at build time and read in code via `String.fromEnvironment()`. Never use `flutter_dotenv` or any runtime `.env` loading — secrets bundled in the APK can be extracted.
+- For local development, create a gitignored `.env.json` in the project root and run with `fvm flutter run --dart-define-from-file=.env.json`. See the README for setup instructions.
 - **Never use the service role key** on the client. It bypasses RLS and is a security vulnerability.
 - **RLS is the security layer.** Do not replicate RLS logic in Dart as a substitute — write the correct policy.
 - Use Supabase Realtime for live data (available bike counts). Do not poll.
