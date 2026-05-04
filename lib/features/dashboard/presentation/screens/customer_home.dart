@@ -221,7 +221,7 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () => _showProfileSheet(isDark),
                             child: CircleAvatar(
                               radius: 20,
                               backgroundColor:
