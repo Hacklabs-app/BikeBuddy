@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
@@ -137,11 +138,12 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
           ),
           data: (shop) {
             if (shop == null) {
+              // Redirect to setup on next frame — keeps build() pure.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) context.go('/shop-setup');
+              });
               return const Center(
-                child: Text(
-                  'No shop found for this account.',
-                  style: TextStyle(color: _textSecondary),
-                ),
+                child: CircularProgressIndicator(color: _green),
               );
             }
             final shopId = shop['id'] as String;
