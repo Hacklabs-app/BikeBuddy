@@ -53,10 +53,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isOwner && _isCustomerAuthRoute(location)) return '/admin';
 
       // ── Non-owner → owner routes ────────────────────────────────────────────
-      // Customers go to their home; unauthenticated guests go to login.
-      if (!isOwner && _isOwnerRoute(location)) {
-        return isLoggedIn ? '/home' : '/login';
-      }
+      // Always redirect to /home — covers both customers and the post-logout
+      // case where an owner lands on /admin after signOut() clears the session.
+      if (!isOwner && _isOwnerRoute(location)) return '/home';
 
       // ── Unauthenticated → customer-auth routes ──────────────────────────────
       // No hard login wall — drop them at /home in browse-only mode instead.
