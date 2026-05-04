@@ -118,6 +118,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       final supabase = Supabase.instance.client;
 
       if (_mode == _AuthMode.login) {
+        if (_emailCtrl.text.trim().isEmpty) {
+          throw Exception('Please enter your email address');
+        }
+        if (_passCtrl.text.isEmpty) {
+          throw Exception('Please enter your password');
+        }
+
         final res = await supabase.auth.signInWithPassword(
           email: _emailCtrl.text.trim(),
           password: _passCtrl.text,
