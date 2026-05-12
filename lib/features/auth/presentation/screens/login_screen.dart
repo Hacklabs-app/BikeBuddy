@@ -169,10 +169,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       String msg = e.toString();
       if (msg.contains('Invalid login')) msg = 'Wrong email or password.';
       if (msg.contains('already registered')) msg = 'Email already in use.';
+      if (msg.contains('Database error saving new user')) {
+        msg =
+            'Account creation hit a setup issue. Run the latest Supabase migrations and try again.';
+      }
       if (msg.contains('Password should')) {
         msg = 'Password must be 6+ characters.';
       }
 
+      if (!mounted) return;
       setState(() => _errorMsg = msg.replaceAll('Exception: ', ''));
       _shakeCtrl.forward(from: 0);
     } finally {

@@ -1,24 +1,37 @@
 class BillingCalculator {
-  /// Rounds duration to nearest 15-min block, then multiplies by rate
-  static double calculate({
-    required DateTime checkoutTime,
-    required DateTime checkinTime,
-    required double hourlyRate,
+  /// amount_due = CEIL(duration_minutes / 60) x rate_per_hour x quantity.
+  static int calculateAmountDue({
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required int ratePerHour,
+    required int quantity,
   }) {
-    final rawMinutes = checkinTime.difference(checkoutTime).inMinutes;
-    final roundedMinutes = ((rawMinutes / 15).ceil() * 15).clamp(15, 99999);
-    final hours = roundedMinutes / 60;
-    return double.parse((hours * hourlyRate).toStringAsFixed(2));
+    if (ratePerHour <= 0) {
+      throw ArgumentError.value(ratePerHour, 'ratePerHour', 'must be positive');
+    }
+    if (quantity <= 0) {
+      throw ArgumentError.value(quantity, 'quantity', 'must be positive');
+    }
+
+    final durationMinutes = endedAt.difference(startedAt).inMinutes;
+    final billableHours = (durationMinutes / 60).ceil().clamp(1, 99999);
+    return billableHours * ratePerHour * quantity;
   }
 
-  /// Available count = total fleet - rented - reserved
-  static int availableCount(int total, int rented, int reserved) {
-    return (total - rented - reserved).clamp(0, total);
+  /// Available bikes = total_bikes - SUM(active rental quantities).
+  static int availableCount({
+    required int totalBikes,
+    required int activeRentalQuantity,
+  }) {
+    return (totalBikes - activeRentalQuantity).clamp(0, totalBikes);
   }
 
   /// Utilization rate as a percentage
-  static double utilizationRate(int rented, int total) {
-    if (total == 0) return 0;
-    return (rented / total) * 100;
+  static double utilizationRate({
+    required int activeRentalQuantity,
+    required int totalBikes,
+  }) {
+    if (totalBikes == 0) return 0;
+    return (activeRentalQuantity / totalBikes) * 100;
   }
 }

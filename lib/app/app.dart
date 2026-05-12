@@ -4,17 +4,18 @@ import 'package:go_router/go_router.dart';
 import '../shared/providers/auth_provider.dart';
 import '../core/models/user_model.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/customer/domain/entities/discovery_shop.dart';
+import '../features/customer/presentation/screens/customer_home.dart';
+import '../features/customer/presentation/screens/shop_detail_screen.dart';
 import '../features/dashboard/presentation/screens/admin_dashboard.dart';
 import '../features/dashboard/presentation/screens/shop_setup_screen.dart';
-import '../features/dashboard/presentation/screens/customer_home.dart';
-import '../features/rentals/presentation/screens/booking_confirm_screen.dart';
 import '../features/rentals/presentation/screens/active_ride_screen.dart';
 import '../features/rentals/presentation/screens/scan_qr_screen.dart';
 import '../features/rentals/presentation/screens/ride_history_screen.dart';
 
 // Extend these two lists as new routes are added — guards update automatically.
 const _ownerRoutes = ['/admin', '/shop-setup'];
-const _customerAuthRoutes = ['/booking', '/ride', '/scan', '/history'];
+const _customerAuthRoutes = ['/ride', '/scan', '/history'];
 
 bool _isOwnerRoute(String loc) => _ownerRoutes.any(loc.startsWith);
 bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.any(loc.startsWith);
@@ -70,19 +71,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/admin', builder: (_, __) => const AdminDashboard()),
       GoRoute(path: '/shop-setup', builder: (_, __) => const ShopSetupScreen()),
       GoRoute(path: '/home', builder: (_, __) => const CustomerHome()),
+      GoRoute(
+        path: '/shop-detail',
+        builder: (_, state) {
+          final shop = state.extra as DiscoveryShop?;
+          if (shop == null) return const CustomerHome();
+          return ShopDetailScreen(shop: shop);
+        },
+      ),
       GoRoute(path: '/ride', builder: (_, __) => const ActiveRideScreen()),
       GoRoute(path: '/scan', builder: (_, __) => const ScanQrScreen()),
       GoRoute(path: '/history', builder: (_, __) => const RideHistoryScreen()),
-      GoRoute(
-        path: '/booking',
-        builder: (_, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return BookingConfirmScreen(
-            bike: extra?['bike'] as Map<String, dynamic>? ?? {},
-            selectedHours: extra?['hours'] as int? ?? 1,
-          );
-        },
-      ),
     ],
   );
 });

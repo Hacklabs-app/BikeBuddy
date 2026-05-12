@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/services/location_service.dart';
+import '../../../../core/widgets/bike_buddy_bottom_nav.dart';
 import 'admin_dashboard.dart' show adminShopProvider;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -36,7 +38,10 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
 
   bool _initialising = true;
   bool _saving = false;
+  bool _locating = false;
   String? _error;
+  double? _latitude;
+  double? _longitude;
 
   // Non-null when editing an existing shop
   String? _shopId;
@@ -78,6 +83,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
         _nameCtrl.text = shop['name'] as String? ?? '';
         _addressCtrl.text = shop['address'] as String? ?? '';
         _bikesCtrl.text = (shop['total_bikes'] as int? ?? 0).toString();
+        _latitude = (shop['lat'] as num?)?.toDouble();
+        _longitude = (shop['lng'] as num?)?.toDouble();
 
         final rate = await _supabase
             .from('shop_rates')
@@ -118,6 +125,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
           'owner_id': uid,
           'name': name,
           'address': address,
+          'lat': _latitude,
+          'lng': _longitude,
           'total_bikes': totalBikes,
         }).select().single();
 
@@ -126,10 +135,28 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
           'rate_per_hour': ratePerHour,
         });
       } else {
+        final activeRentals = await _supabase
+            .from('rentals')
+            .select('quantity')
+            .eq('shop_id', _shopId!)
+            .filter('ended_at', 'is', null);
+        final activeQuantity = (activeRentals as List).fold<int>(
+          0,
+          (sum, rental) =>
+              sum + ((rental as Map<String, dynamic>)['quantity'] as int? ?? 0),
+        );
+        if (totalBikes < activeQuantity) {
+          throw Exception(
+            'Total bikes cannot be below $activeQuantity bikes currently out.',
+          );
+        }
+
         // ── Update ──────────────────────────────────────────────────────────
         await _supabase.from('shops').update({
           'name': name,
           'address': address,
+          'lat': _latitude,
+          'lng': _longitude,
           'total_bikes': totalBikes,
         }).eq('id', _shopId!);
 
@@ -151,6 +178,30 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
     }
   }
 
+  Future<void> _captureLocation() async {
+    setState(() {
+      _locating = true;
+      _error = null;
+    });
+
+    try {
+      final result = await locationService.requestCurrentLocation();
+      final location = result.location;
+      if (location == null) {
+        throw Exception(_locationSetupMessage(result.status));
+      }
+
+      setState(() {
+        _latitude = location.latitude;
+        _longitude = location.longitude;
+      });
+    } catch (e) {
+      setState(() => _error = e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   bool get _isEdit => _shopId != null;
@@ -161,6 +212,9 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _bgDark,
+        bottomNavigationBar: const BikeBuddyBottomNav.owner(
+          currentItem: BikeBuddyNavItem.ownerSettings,
+        ),
         body: _initialising
             ? const Center(child: CircularProgressIndicator(color: _green))
             : Center(
@@ -251,6 +305,48 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
               icon: Icons.location_on_outlined,
               validator: (v) =>
                   v == null || v.trim().isEmpty ? 'Address is required' : null,
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _surfaceAlt,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _border),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _latitude == null
+                        ? Icons.location_off_outlined
+                        : Icons.location_on_outlined,
+                    color: _latitude == null ? _textSecondary : _green,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _latitude == null
+                          ? 'Capture shop location for nearby discovery.'
+                          : 'Location captured for nearby discovery.',
+                      style: const TextStyle(
+                        color: _textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _locating ? null : _captureLocation,
+                    icon: _locating
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.my_location, size: 18),
+                    label: Text(_latitude == null ? 'Capture' : 'Update'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -447,5 +543,20 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
         ),
       ],
     );
+  }
+}
+
+String _locationSetupMessage(LocationRequestStatus status) {
+  switch (status) {
+    case LocationRequestStatus.serviceDisabled:
+      return 'Turn on device location, then capture again.';
+    case LocationRequestStatus.permissionDenied:
+      return 'Allow location permission to capture your shop location.';
+    case LocationRequestStatus.timedOut:
+      return 'Location took too long. Try again near a window or outside.';
+    case LocationRequestStatus.unavailable:
+      return 'Could not get your location right now.';
+    case LocationRequestStatus.ready:
+      return 'Location captured.';
   }
 }
