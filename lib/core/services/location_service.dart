@@ -62,7 +62,9 @@ class LocationService {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        timeLimit: const Duration(seconds: 12),
+        locationSettings: const LocationSettings(
+          timeLimit: Duration(seconds: 12),
+        ),
       );
 
       return LocationRequestResult.ready(
