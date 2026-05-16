@@ -1,6 +1,5 @@
 import 'package:bike_buddy/features/auth/presentation/screens/login_screen.dart';
 import 'package:bike_buddy/features/auth/presentation/state/auth_state.dart';
-import 'package:bike_buddy/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,7 +50,7 @@ void main() {
 
     testWidgets('shows loading state when auth is in progress', (tester) async {
       // Mock loading state
-      mockAuthNotifier.state = const AuthState(isLoading: true);
+      mockAuthNotifier.state = const AuthState(isEmailLoading: true);
 
       await tester.pumpWidget(createTestWidget());
 

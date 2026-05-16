@@ -11,7 +11,6 @@ class MockLocationService extends Mock implements LocationService {}
 
 void main() {
   late MockDiscoveryRepository mockRepo;
-  late MockLocationService mockLocationService;
 
   final testShops = [
     const DiscoveryShop(
@@ -42,8 +41,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockDiscoveryRepository();
-    mockLocationService = MockLocationService();
-    registerFallbackValue(UserLocation(latitude: 0, longitude: 0));
+    registerFallbackValue(const UserLocation(latitude: 0, longitude: 0));
   });
 
   ProviderContainer makeContainer() {

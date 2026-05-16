@@ -1,6 +1,5 @@
 import 'package:bike_buddy/app/app.dart';
 import 'package:bike_buddy/core/services/storage_service.dart';
-import 'package:bike_buddy/main.dart' as app_main;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

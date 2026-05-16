@@ -12,11 +12,15 @@ import '../features/discovery/presentation/screens/discovery_home_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/update_password_screen.dart';
+import '../features/auth/presentation/screens/role_selection_screen.dart';
+import '../features/auth/presentation/screens/rider_signup_screen.dart';
 
 // Route constant names for easier management
 class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
+  static const roleSelection = '/role-selection';
+  static const riderSignUp = '/rider-signup';
   static const forgotPassword = '/forgot-password';
   static const updatePassword = '/update-password';
   static const loading = '/loading';
@@ -32,37 +36,25 @@ const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
 const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan, AppRoutes.history];
 
 bool _isOwnerRoute(String loc) => _ownerRoutes.any(loc.startsWith);
-bool _isCustomerAuthRoute(String loc) =>
-    _customerAuthRoutes.any(loc.startsWith);
+bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.any(loc.startsWith);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ValueNotifier<bool>(false);
-
-  ref.listen(
-    authStateProvider,
-    (_, __) => refreshListenable.value = !refreshListenable.value,
-  );
-  ref.listen(
-    currentUserProvider,
-    (_, __) => refreshListenable.value = !refreshListenable.value,
-  );
-  ref.listen(
-    hasSeenOnboardingProvider,
-    (_, __) => refreshListenable.value = !refreshListenable.value,
-  );
+  
+  ref.listen(authStateProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(currentUserProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(hasSeenOnboardingProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
 
   return GoRouter(
-    initialLocation: ref.read(hasSeenOnboardingProvider)
-        ? AppRoutes.home
-        : AppRoutes.onboarding,
+    initialLocation: ref.read(hasSeenOnboardingProvider) ? AppRoutes.home : AppRoutes.onboarding,
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final location = state.matchedLocation;
-
+      
       final authState = ref.read(authStateProvider);
       final userAsync = ref.read(currentUserProvider);
       final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
-
+      
       final isLoggedIn = authState.valueOrNull != null;
       final user = userAsync.valueOrNull;
       final isOwner = user?.role == UserRole.owner;
@@ -75,7 +67,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
-      // ── Loading & Profile Resolution ───────────────────────────────────────
+      // ── Profile Gap Interceptor ───────────────────────────────────────────
+      // If logged in but profile hasn't resolved, stay at /loading
+      if (isLoggedIn && userAsync.isLoading) {
+        return AppRoutes.loading;
+      }
+
+      // If logged in but has no role or missing Rider data, intercept!
+      if (isLoggedIn && user != null) {
+        // Missing Role: Force Role Selection
+        if (user.role == UserRole.guest && location != AppRoutes.roleSelection) {
+          return AppRoutes.roleSelection;
+        }
+        
+        // Rider missing ID Number: Force detail completion
+        if (user.role == UserRole.customer && 
+            (user.idNumber == null || user.idNumber!.isEmpty) && 
+            location != AppRoutes.riderSignUp) {
+          return AppRoutes.riderSignUp;
+        }
+      }
+
+      // ── /loading ────────────────────────────────────────────────────────────
       if (location == AppRoutes.loading) {
         if (!isLoggedIn) return AppRoutes.home;
         if (!userAsync.isLoading) {
@@ -87,9 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // ── Login Guard ────────────────────────────────────────────────────────
+      // ── /login ──────────────────────────────────────────────────────────────
       if (isLoggedIn && location == AppRoutes.login) {
-        if (userAsync.isLoading) return AppRoutes.loading;
         if (isOwner) {
           return user?.shopId == null ? AppRoutes.shopSetup : AppRoutes.admin;
         }
@@ -113,47 +125,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
-      ),
+      GoRoute(path: AppRoutes.onboarding, builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
-      GoRoute(
-        path: AppRoutes.forgotPassword,
-        builder: (_, __) => const ForgotPasswordScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.updatePassword,
-        builder: (_, __) => const UpdatePasswordScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.loading,
-        builder: (_, __) => const _LoadingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.admin,
-        builder: (_, __) => const _PlaceholderScreen(title: 'Admin Dashboard'),
-      ),
-      GoRoute(
-        path: AppRoutes.shopSetup,
-        builder: (_, __) => const _PlaceholderScreen(title: 'Shop Setup'),
-      ),
-      GoRoute(
-        path: AppRoutes.home,
-        builder: (_, __) => const DiscoveryHomeScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.ride,
-        builder: (_, __) => const _PlaceholderScreen(title: 'Active Ride'),
-      ),
-      GoRoute(
-        path: AppRoutes.scan,
-        builder: (_, __) => const _PlaceholderScreen(title: 'Scan QR'),
-      ),
-      GoRoute(
-        path: AppRoutes.history,
-        builder: (_, __) => const _PlaceholderScreen(title: 'Ride History'),
-      ),
+      GoRoute(path: AppRoutes.roleSelection, builder: (_, __) => const RoleSelectionScreen()),
+      GoRoute(path: AppRoutes.riderSignUp, builder: (_, __) => const RiderSignUpScreen()),
+      GoRoute(path: AppRoutes.forgotPassword, builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(path: AppRoutes.updatePassword, builder: (_, __) => const UpdatePasswordScreen()),
+      GoRoute(path: AppRoutes.loading, builder: (_, __) => const _LoadingScreen()),
+      GoRoute(path: AppRoutes.admin, builder: (_, __) => const _PlaceholderScreen(title: 'Admin Dashboard')),
+      GoRoute(path: AppRoutes.shopSetup, builder: (_, __) => const _PlaceholderScreen(title: 'Shop Setup')),
+      GoRoute(path: AppRoutes.home, builder: (_, __) => const DiscoveryHomeScreen()),
+      GoRoute(path: AppRoutes.ride, builder: (_, __) => const _PlaceholderScreen(title: 'Active Ride')),
+      GoRoute(path: AppRoutes.scan, builder: (_, __) => const _PlaceholderScreen(title: 'Scan QR')),
+      GoRoute(path: AppRoutes.history, builder: (_, __) => const _PlaceholderScreen(title: 'Ride History')),
     ],
   );
 });
@@ -161,8 +145,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 class _LoadingScreen extends StatelessWidget {
   const _LoadingScreen();
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => const Scaffold(body: Center(child: CircularProgressIndicator()));
 }
 
 class _PlaceholderScreen extends StatelessWidget {
@@ -170,9 +153,9 @@ class _PlaceholderScreen extends StatelessWidget {
   final String title;
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: Center(child: Text('Placeholder for $title')),
-      );
+    appBar: AppBar(title: Text(title)),
+    body: Center(child: Text('Placeholder for $title')),
+  );
 }
 
 class BikeBuddyApp extends ConsumerStatefulWidget {
@@ -185,8 +168,6 @@ class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
   @override
   void initState() {
     super.initState();
-    // Use a listener to handle the password recovery deep link event.
-    // This avoids circularity by reading the router from the provider once it's built.
     sb.Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       if (data.event == sb.AuthChangeEvent.passwordRecovery) {
         ref.read(routerProvider).push(AppRoutes.updatePassword);
