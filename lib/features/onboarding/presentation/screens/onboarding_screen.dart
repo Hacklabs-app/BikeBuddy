@@ -321,7 +321,7 @@ class _ActionControlState extends State<_ActionControl>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Ride Along now',
+            'Ride Along',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16,
