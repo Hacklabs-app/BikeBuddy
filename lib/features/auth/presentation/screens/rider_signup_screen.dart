@@ -135,8 +135,9 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
-                    validator: (val) =>
-                        (val == null || val.isEmpty) ? 'Name is required' : null,
+                    validator: (val) => (val == null || val.isEmpty)
+                        ? 'Name is required'
+                        : null,
                   ),
                   const SizedBox(height: 24),
                   AuthTextField(
@@ -219,7 +220,6 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   ),
                 ],
                 const SizedBox(height: 40),
-
                 SizedBox(
                   width: double.infinity,
                   height: 56,

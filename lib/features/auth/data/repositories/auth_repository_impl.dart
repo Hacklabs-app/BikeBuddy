@@ -66,7 +66,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       debugPrint('[API RESPONSE] Method: signInWithGoogle, Status: SUCCESS');
     } catch (e) {
-      debugPrint('[API RESPONSE] Method: signInWithGoogle, Status: FAILED, Error: $e');
+      debugPrint(
+          '[API RESPONSE] Method: signInWithGoogle, Status: FAILED, Error: $e');
       rethrow;
     }
   }
@@ -79,7 +80,8 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw 'User not authenticated';
 
-    debugPrint('[API REQUEST] Method: completeRiderRegistration, User: ${user.id}, ID: $idNumber, Phone: $phoneNumber');
+    debugPrint(
+        '[API REQUEST] Method: completeRiderRegistration, User: ${user.id}, ID: $idNumber, Phone: $phoneNumber');
     try {
       await _client.from('profiles').upsert({
         'id': user.id,
@@ -89,9 +91,11 @@ class AuthRepositoryImpl implements AuthRepository {
         'id_number': idNumber,
         'phone_number': phoneNumber,
       });
-      debugPrint('[API RESPONSE] Method: completeRiderRegistration, Status: SUCCESS');
+      debugPrint(
+          '[API RESPONSE] Method: completeRiderRegistration, Status: SUCCESS');
     } catch (e) {
-      debugPrint('[API RESPONSE] Method: completeRiderRegistration, Status: FAILED, Error: $e');
+      debugPrint(
+          '[API RESPONSE] Method: completeRiderRegistration, Status: FAILED, Error: $e');
       rethrow;
     }
   }
@@ -104,7 +108,8 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw 'User not authenticated';
 
-    debugPrint('[API REQUEST] Method: completeOwnerRegistration, User: ${user.id}, Station: $stationName, Phone: $phoneNumber');
+    debugPrint(
+        '[API REQUEST] Method: completeOwnerRegistration, User: ${user.id}, Station: $stationName, Phone: $phoneNumber');
     try {
       // 1. Upsert Profile Role
       await _client.from('profiles').upsert({
@@ -121,9 +126,11 @@ class AuthRepositoryImpl implements AuthRepository {
         'name': stationName,
         'address': 'Pending Setup',
       }, onConflict: 'owner_id');
-      debugPrint('[API RESPONSE] Method: completeOwnerRegistration, Status: SUCCESS');
+      debugPrint(
+          '[API RESPONSE] Method: completeOwnerRegistration, Status: SUCCESS');
     } catch (e) {
-      debugPrint('[API RESPONSE] Method: completeOwnerRegistration, Status: FAILED, Error: $e');
+      debugPrint(
+          '[API RESPONSE] Method: completeOwnerRegistration, Status: FAILED, Error: $e');
       rethrow;
     }
   }
@@ -138,7 +145,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       debugPrint('[API RESPONSE] Method: sendPasswordReset, Status: SUCCESS');
     } catch (e) {
-      debugPrint('[API RESPONSE] Method: sendPasswordReset, Status: FAILED, Error: $e');
+      debugPrint(
+          '[API RESPONSE] Method: sendPasswordReset, Status: FAILED, Error: $e');
       rethrow;
     }
   }
@@ -150,7 +158,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _client.auth.updateUser(UserAttributes(password: newPassword));
       debugPrint('[API RESPONSE] Method: updatePassword, Status: SUCCESS');
     } catch (e) {
-      debugPrint('[API RESPONSE] Method: updatePassword, Status: FAILED, Error: $e');
+      debugPrint(
+          '[API RESPONSE] Method: updatePassword, Status: FAILED, Error: $e');
       rethrow;
     }
   }

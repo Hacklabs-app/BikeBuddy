@@ -49,12 +49,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on AuthException catch (e) {
       debugPrint('[AUTH] Sign in failed (AuthException): ${e.message}');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: _mapAuthError(e.message));
+      state = state.copyWith(
+          isEmailLoading: false, error: _mapAuthError(e.message));
       return false;
     } catch (e) {
       debugPrint('[AUTH] Sign in failed (Unknown): $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Connection failed. Check your network.');
+      state = state.copyWith(
+          isEmailLoading: false,
+          error: 'Connection failed. Check your network.');
       return false;
     }
   }
@@ -67,7 +70,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     debugPrint('[AUTH] Attempting sign up for: $email');
     state = state.copyWith(isEmailLoading: true, error: null);
     try {
-      await _repository.signUp(email: email, password: password, fullName: fullName);
+      await _repository.signUp(
+          email: email, password: password, fullName: fullName);
       debugPrint('[AUTH] Sign up successful!');
       if (!mounted) return true;
       state = state.copyWith(isEmailLoading: false);
@@ -80,7 +84,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Sign up failed (Unknown): $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Registration failed.');
+      state =
+          state.copyWith(isEmailLoading: false, error: 'Registration failed.');
       return false;
     }
   }
@@ -96,7 +101,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Google Auth failed: $e');
       if (!mounted) return;
-      state = state.copyWith(isGoogleLoading: false, error: 'Google sign-in failed.');
+      state = state.copyWith(
+          isGoogleLoading: false, error: 'Google sign-in failed.');
     }
   }
 
@@ -111,10 +117,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         idNumber: idNumber,
         phoneNumber: phoneNumber,
       );
-      
+
       debugPrint('[AUTH] Invalidation profile cache to reflect new role...');
       _ref.invalidate(currentUserProvider);
-      
+
       debugPrint('[AUTH] Rider registration saved to database.');
       if (!mounted) return true;
       state = state.copyWith(isEmailLoading: false);
@@ -122,7 +128,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Rider registration failed: $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Could not save profile details.');
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not save profile details.');
       return false;
     }
   }
@@ -149,7 +156,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Owner registration failed: $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Could not save station details.');
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not save station details.');
       return false;
     }
   }
@@ -166,7 +174,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Reset email failed: $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Could not send reset email.');
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not send reset email.');
       return false;
     }
   }
@@ -183,7 +192,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Password update failed: $e');
       if (!mounted) return false;
-      state = state.copyWith(isEmailLoading: false, error: 'Could not update password.');
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not update password.');
       return false;
     }
   }
@@ -199,7 +209,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[AUTH] Sign out failed: $e');
       if (!mounted) return;
-      state = state.copyWith(isEmailLoading: false, error: 'Could not sign out.');
+      state =
+          state.copyWith(isEmailLoading: false, error: 'Could not sign out.');
     }
   }
 
@@ -207,8 +218,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (message.contains('Invalid login credentials')) {
       return 'Incorrect email/password or account not found.';
     }
-    if (message.contains('Email not confirmed')) return 'Please verify your email address.';
-    if (message.contains('rate limit')) return 'Too many attempts. Try again later.';
+    if (message.contains('Email not confirmed')) {
+      return 'Please verify your email address.';
+    }
+    if (message.contains('rate limit')) {
+      return 'Too many attempts. Try again later.';
+    }
     return message;
   }
 }
@@ -217,7 +232,8 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(Supabase.instance.client);
 });
 
-final authNotifierProvider = StateNotifierProvider.autoDispose<AuthNotifier, AuthState>((ref) {
+final authNotifierProvider =
+    StateNotifierProvider.autoDispose<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return AuthNotifier(repository, ref);
 });

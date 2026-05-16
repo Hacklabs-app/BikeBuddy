@@ -51,9 +51,9 @@ void main() {
           .signIn('test@example.com', 'password');
 
       expect(result, false);
-      expect(container.read(authNotifierProvider).isLoading, false);
+      expect(container.read(authNotifierProvider).isEmailLoading, false);
       expect(container.read(authNotifierProvider).error,
-          contains('Incorrect email or password'));
+          contains('Incorrect email/password'));
     });
 
     test('sendPasswordReset calls repository', () async {

@@ -130,8 +130,9 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
-                    validator: (val) =>
-                        (val == null || val.isEmpty) ? 'Name is required' : null,
+                    validator: (val) => (val == null || val.isEmpty)
+                        ? 'Name is required'
+                        : null,
                   ),
                   const SizedBox(height: 24),
                   AuthTextField(

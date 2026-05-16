@@ -8,7 +8,8 @@ import '../shared/providers/auth_provider.dart';
 import '../core/models/user_model.dart';
 import '../core/services/storage_service.dart';
 import '../core/widgets/floating_bottom_nav.dart';
-import '../features/auth/presentation/state/auth_state.dart';
+import '../core/widgets/loading_screen.dart';
+import '../core/widgets/common_placeholder_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/discovery/presentation/screens/discovery_home_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
@@ -38,7 +39,11 @@ class AppRoutes {
 
 const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
 const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan, AppRoutes.profile];
-const _registrationRoutes = [AppRoutes.roleSelection, AppRoutes.riderSignUp, AppRoutes.ownerSignUp];
+const _registrationRoutes = [
+  AppRoutes.roleSelection,
+  AppRoutes.riderSignUp,
+  AppRoutes.ownerSignUp
+];
 
 bool _isOwnerRoute(String loc) => _ownerRoutes.contains(loc);
 bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.contains(loc);
@@ -46,21 +51,26 @@ bool _isRegistrationRoute(String loc) => _registrationRoutes.contains(loc);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ValueNotifier<bool>(false);
-  
-  ref.listen(authStateProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
-  ref.listen(currentUserProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
-  ref.listen(hasSeenOnboardingProvider, (_, __) => refreshListenable.value = !refreshListenable.value);
+
+  ref.listen(authStateProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(currentUserProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(hasSeenOnboardingProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
 
   return GoRouter(
-    initialLocation: ref.read(hasSeenOnboardingProvider) ? AppRoutes.home : AppRoutes.onboarding,
+    initialLocation: ref.read(hasSeenOnboardingProvider)
+        ? AppRoutes.home
+        : AppRoutes.onboarding,
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final location = state.matchedLocation;
-      
+
       final authState = ref.read(authStateProvider);
       final userAsync = ref.read(currentUserProvider);
       final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
-      
+
       final isLoggedIn = authState.valueOrNull != null;
       final user = userAsync.valueOrNull;
       final isOwner = user?.role == UserRole.owner;
@@ -85,9 +95,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // ── Guest Guard ───────────────────────────────────────────────────────
       if (!isLoggedIn) {
         // Guests ARE allowed on Registration routes and Login routes.
-        // They are BLOCKED from Activity/Scan/Profile/Admin.
         if (_isCustomerAuthRoute(location) || _isOwnerRoute(location)) {
-          debugPrint('[ROUTER] Guest blocked from private route. Redirecting to Home');
+          debugPrint(
+              '[ROUTER] Guest blocked from private route. Redirecting to Home');
           return AppRoutes.home;
         }
         return null;
@@ -101,7 +111,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 1. User has no role (First-time social or trigger lag) -> Force Role Selection
       if (user?.role == UserRole.pending || user == null) {
         if (!_isRegistrationRoute(location)) {
-          debugPrint('[ROUTER] Redirecting: Authenticated user needs to pick a role');
+          debugPrint(
+              '[ROUTER] Redirecting: Authenticated user needs to pick a role');
           return AppRoutes.roleSelection;
         }
         return null;
@@ -109,7 +120,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 2. Owner missing a Station -> Force Owner Signup/Setup
       if (isOwner && user.shopId == null) {
-        if (location != AppRoutes.ownerSignUp && location != AppRoutes.shopSetup) {
+        if (location != AppRoutes.ownerSignUp &&
+            location != AppRoutes.shopSetup) {
           debugPrint('[ROUTER] Redirecting: Owner needs to setup station');
           return AppRoutes.ownerSignUp;
         }
@@ -144,136 +156,64 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: AppRoutes.onboarding, builder: (_, __) => const OnboardingScreen()),
-      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
-      GoRoute(path: AppRoutes.roleSelection, builder: (_, __) => const RoleSelectionScreen()),
-      GoRoute(path: AppRoutes.riderSignUp, builder: (_, __) => const RiderSignUpScreen()),
-      GoRoute(path: AppRoutes.ownerSignUp, builder: (_, __) => const OwnerSignUpScreen()),
-      GoRoute(path: AppRoutes.forgotPassword, builder: (_, __) => const ForgotPasswordScreen()),
-      GoRoute(path: AppRoutes.updatePassword, builder: (_, __) => const UpdatePasswordScreen()),
-      GoRoute(path: AppRoutes.loading, builder: (_, __) => const _LoadingScreen()),
       GoRoute(
-        path: AppRoutes.admin, 
-        builder: (_, __) => const _PlaceholderScreen(
+          path: AppRoutes.onboarding,
+          builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+      GoRoute(
+          path: AppRoutes.roleSelection,
+          builder: (_, __) => const RoleSelectionScreen()),
+      GoRoute(
+          path: AppRoutes.riderSignUp,
+          builder: (_, __) => const RiderSignUpScreen()),
+      GoRoute(
+          path: AppRoutes.ownerSignUp,
+          builder: (_, __) => const OwnerSignUpScreen()),
+      GoRoute(
+          path: AppRoutes.forgotPassword,
+          builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+          path: AppRoutes.updatePassword,
+          builder: (_, __) => const UpdatePasswordScreen()),
+      GoRoute(
+          path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
+      GoRoute(
+        path: AppRoutes.admin,
+        builder: (_, __) => const CommonPlaceholderScreen(
           title: 'Business Dashboard',
           isOwnerView: true,
         ),
       ),
-      GoRoute(path: AppRoutes.shopSetup, builder: (_, __) => const _PlaceholderScreen(title: 'Shop Setup')),
-      GoRoute(path: AppRoutes.home, builder: (_, __) => const DiscoveryHomeScreen()),
       GoRoute(
-        path: AppRoutes.ride, 
-        builder: (_, __) => const _PlaceholderScreen(
-          title: 'Activity', 
+        path: AppRoutes.shopSetup,
+        builder: (_, __) => const CommonPlaceholderScreen(title: 'Shop Setup'),
+      ),
+      GoRoute(
+          path: AppRoutes.home,
+          builder: (_, __) => const DiscoveryHomeScreen()),
+      GoRoute(
+        path: AppRoutes.ride,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Activity',
           tab: FloatingNavTab.activity,
         ),
       ),
       GoRoute(
-        path: AppRoutes.scan, 
-        builder: (_, __) => const _PlaceholderScreen(
-          title: 'Scan QR', 
+        path: AppRoutes.scan,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Scan QR',
           tab: FloatingNavTab.scan,
         ),
       ),
       GoRoute(
-        path: AppRoutes.profile, 
-        builder: (_, __) => const _PlaceholderScreen(
+        path: AppRoutes.profile,
+        builder: (_, __) => const CommonPlaceholderScreen(
           title: 'Profile Settings',
         ),
       ),
     ],
   );
 });
-
-class _LoadingScreen extends StatelessWidget {
-  const _LoadingScreen();
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: CircularProgressIndicator()));
-}
-
-class _PlaceholderScreen extends ConsumerWidget {
-  const _PlaceholderScreen({required this.title, this.tab, this.isOwnerView = false});
-  final String title;
-  final FloatingNavTab? tab;
-  final bool isOwnerView;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
-      body: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isOwnerView 
-                      ? Icons.dashboard_customize_rounded 
-                      : (tab == FloatingNavTab.activity 
-                          ? Icons.bar_chart_rounded 
-                          : tab == FloatingNavTab.scan 
-                              ? Icons.qr_code_scanner_rounded 
-                              : Icons.person_outline_rounded),
-                  color: Colors.white10,
-                  size: 80,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  isOwnerView ? 'Manage your station assets here.' : 'Coming soon to your city.',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: Colors.white38,
-                  ),
-                ),
-                if (tab == null) ...[ // Only show logout on the Profile page or Admin dash
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: 200,
-                    child: OutlinedButton(
-                      onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.redAccent, width: 0.5),
-                        foregroundColor: Colors.redAccent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('Sign Out'),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (tab != null)
-            Positioned(
-              bottom: 32,
-              left: 24,
-              right: 24,
-              child: FloatingBottomNav(activeTab: tab!),
-            ),
-          if (tab == null && !isOwnerView) // Profile page back button
-            Positioned(
-              top: 60,
-              left: 24,
-              child: IconButton(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
 
 class BikeBuddyApp extends ConsumerStatefulWidget {
   const BikeBuddyApp({super.key});

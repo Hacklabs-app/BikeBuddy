@@ -9,7 +9,8 @@ class DiscoveryRepositoryImpl implements DiscoveryRepository {
     try {
       // Simulating a network delay
       await Future.delayed(const Duration(milliseconds: 500));
-      debugPrint('[API RESPONSE] Method: getShops, Status: SUCCESS, Count: ${_mockShops.length}');
+      debugPrint(
+          '[API RESPONSE] Method: getShops, Status: SUCCESS, Count: ${_mockShops.length}');
       return _mockShops;
     } catch (e) {
       debugPrint('[API RESPONSE] Method: getShops, Status: FAILED, Error: $e');

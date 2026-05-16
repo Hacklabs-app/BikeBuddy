@@ -79,7 +79,8 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
                     padding: const EdgeInsets.only(top: 24),
                     child: Text(
                       authState.error!,
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                      style: const TextStyle(
+                          color: Colors.redAccent, fontSize: 13),
                     ),
                   ),
                 const SizedBox(height: 48),
@@ -91,7 +92,9 @@ class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
                   autofillHints: const [AutofillHints.newPassword],
                   textInputAction: TextInputAction.next,
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Password is required';
+                    if (val == null || val.isEmpty) {
+                      return 'Password is required';
+                    }
                     if (val.length < 6) return 'At least 6 characters';
                     return null;
                   },

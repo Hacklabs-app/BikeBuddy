@@ -38,7 +38,8 @@ class RoleSelectionScreen extends ConsumerWidget {
         actions: [
           if (isLoggedIn)
             TextButton(
-              onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+              onPressed: () =>
+                  ref.read(authNotifierProvider.notifier).signOut(),
               child: Text(
                 'SIGN OUT',
                 style: GoogleFonts.inter(
@@ -77,7 +78,7 @@ class RoleSelectionScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 48),
-              
+
               // RIDER CARD
               _RoleCard(
                 title: 'RIDER',
@@ -86,9 +87,9 @@ class RoleSelectionScreen extends ConsumerWidget {
                 color: AppColors.green,
                 onTap: () => context.push(AppRoutes.riderSignUp),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // OWNER CARD
               _RoleCard(
                 title: 'STATION OWNER',
@@ -124,7 +125,8 @@ class _RoleCard extends StatefulWidget {
   State<_RoleCard> createState() => _RoleCardState();
 }
 
-class _RoleCardState extends State<_RoleCard> with SingleTickerProviderStateMixin {
+class _RoleCardState extends State<_RoleCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -195,7 +197,8 @@ class _RoleCardState extends State<_RoleCard> with SingleTickerProviderStateMixi
                 decoration: BoxDecoration(
                   color: widget.color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(color: widget.color.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: widget.color.withValues(alpha: 0.2)),
                 ),
                 child: Icon(widget.icon, color: widget.color, size: 28),
               ),
