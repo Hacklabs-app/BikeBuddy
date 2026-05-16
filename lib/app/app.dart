@@ -1,129 +1,263 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../shared/providers/auth_provider.dart';
 import '../core/models/user_model.dart';
+import '../core/services/storage_service.dart';
+import '../core/widgets/floating_bottom_nav.dart';
+import '../core/widgets/loading_screen.dart';
+import '../core/widgets/common_placeholder_screen.dart';
+import '../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../features/discovery/presentation/screens/discovery_home_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
-import '../features/customer/domain/entities/discovery_shop.dart';
-import '../features/customer/presentation/screens/customer_home.dart';
-import '../features/customer/presentation/screens/shop_detail_screen.dart';
-import '../features/dashboard/presentation/screens/admin_dashboard.dart';
-import '../features/dashboard/presentation/screens/shop_setup_screen.dart';
-import '../features/rentals/presentation/screens/active_ride_screen.dart';
-import '../features/rentals/presentation/screens/scan_qr_screen.dart';
-import '../features/rentals/presentation/screens/ride_history_screen.dart';
+import '../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../features/auth/presentation/screens/update_password_screen.dart';
+import '../features/auth/presentation/screens/role_selection_screen.dart';
+import '../features/auth/presentation/screens/rider_signup_screen.dart';
+import '../features/auth/presentation/screens/owner_signup_screen.dart';
 
-// Extend these two lists as new routes are added — guards update automatically.
-const _ownerRoutes = ['/admin', '/shop-setup'];
-const _customerAuthRoutes = ['/ride', '/scan', '/history'];
+// Route constant names for easier management
+class AppRoutes {
+  static const onboarding = '/onboarding';
+  static const login = '/login';
+  static const roleSelection = '/role-selection';
+  static const riderSignUp = '/rider-signup';
+  static const ownerSignUp = '/owner-signup';
+  static const forgotPassword = '/forgot-password';
+  static const updatePassword = '/update-password';
+  static const loading = '/loading';
+  static const home = '/home';
+  static const admin = '/admin';
+  static const shopSetup = '/shop-setup';
+  static const ride = '/ride';
+  static const scan = '/scan';
+  static const profile = '/profile';
+}
 
-bool _isOwnerRoute(String loc) => _ownerRoutes.any(loc.startsWith);
-bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.any(loc.startsWith);
+const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
+const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan, AppRoutes.profile];
+const _registrationRoutes = [
+  AppRoutes.roleSelection,
+  AppRoutes.riderSignUp,
+  AppRoutes.ownerSignUp
+];
+
+bool _isOwnerRoute(String loc) => _ownerRoutes.contains(loc);
+bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.contains(loc);
+bool _isRegistrationRoute(String loc) => _registrationRoutes.contains(loc);
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Watching both providers means the router rebuilds (and redirect re-fires)
-  // whenever auth state or the fetched profile changes.
-  final authState = ref.watch(authStateProvider);
-  final userAsync = ref.watch(currentUserProvider);
+  final refreshListenable = ValueNotifier<bool>(false);
+
+  ref.listen(authStateProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(currentUserProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
+  ref.listen(hasSeenOnboardingProvider,
+      (_, __) => refreshListenable.value = !refreshListenable.value);
 
   return GoRouter(
-    initialLocation: '/home',
+    initialLocation: ref.read(hasSeenOnboardingProvider)
+        ? AppRoutes.home
+        : AppRoutes.onboarding,
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
       final location = state.matchedLocation;
+
+      final authState = ref.read(authStateProvider);
+      final userAsync = ref.read(currentUserProvider);
+      final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
+
       final isLoggedIn = authState.valueOrNull != null;
       final user = userAsync.valueOrNull;
       final isOwner = user?.role == UserRole.owner;
 
-      // ── /loading ────────────────────────────────────────────────────────────
-      // Used as a brief holding screen while the profile is being fetched.
-      // Exit immediately if not logged in, or once the profile resolves.
-      if (location == '/loading') {
-        if (!isLoggedIn) return '/home';
-        if (!userAsync.isLoading) return isOwner ? '/admin' : '/home';
-        return null; // still fetching — stay on the spinner
+      // ── DEBUG LOGGING ──────────────────────────────────────────────────────
+      debugPrint('┌── [ROUTER] ───────────────────────────────────────');
+      debugPrint('│ Location: $location');
+      debugPrint('│ Logged In: $isLoggedIn');
+      debugPrint('│ Profile Loaded: ${!userAsync.isLoading}');
+      debugPrint('│ User Role: ${user?.role.name ?? "null"}');
+      debugPrint('│ Shop ID: ${user?.shopId ?? "null"}');
+      debugPrint('└───────────────────────────────────────────────────');
+
+      // ── Onboarding Guard ───────────────────────────────────────────────────
+      if (!hasSeenOnboarding && location != AppRoutes.onboarding) {
+        return AppRoutes.onboarding;
+      }
+      if (hasSeenOnboarding && location == AppRoutes.onboarding) {
+        return AppRoutes.home;
       }
 
-      // ── /login ──────────────────────────────────────────────────────────────
-      // Authenticated users have no business on the login screen.
-      // Hold at /loading while the profile is still resolving.
-      if (isLoggedIn && location == '/login') {
-        return userAsync.isLoading ? '/loading' : (isOwner ? '/admin' : '/home');
+      // ── Guest Guard ───────────────────────────────────────────────────────
+      if (!isLoggedIn) {
+        // Guests ARE allowed on Registration routes and Login routes.
+        if (_isCustomerAuthRoute(location) || _isOwnerRoute(location)) {
+          debugPrint(
+              '[ROUTER] Guest blocked from private route. Redirecting to Home');
+          return AppRoutes.home;
+        }
+        return null;
       }
 
-      // ── Owner → customer-auth routes ────────────────────────────────────────
-      // An owner has no customer bookings or ride screens; send them home.
-      if (isOwner && _isCustomerAuthRoute(location)) return '/admin';
+      // ── Profile Gap Interceptor (Only for Authenticated Users) ─────────────
+      if (userAsync.isLoading) {
+        return null;
+      }
 
-      // ── Non-owner → owner routes ────────────────────────────────────────────
-      // Always redirect to /home — covers both customers and the post-logout
-      // case where an owner lands on /admin after signOut() clears the session.
-      if (!isOwner && _isOwnerRoute(location)) return '/home';
+      // 1. User has no role (First-time social or trigger lag) -> Force Role Selection
+      if (user?.role == UserRole.pending || user == null) {
+        if (!_isRegistrationRoute(location)) {
+          debugPrint(
+              '[ROUTER] Redirecting: Authenticated user needs to pick a role');
+          return AppRoutes.roleSelection;
+        }
+        return null;
+      }
 
-      // ── Unauthenticated → customer-auth routes ──────────────────────────────
-      // No hard login wall — drop them at /home in browse-only mode instead.
-      if (!isLoggedIn && _isCustomerAuthRoute(location)) return '/home';
+      // 2. Owner missing a Station -> Force Owner Signup/Setup
+      if (isOwner && user.shopId == null) {
+        if (location != AppRoutes.ownerSignUp &&
+            location != AppRoutes.shopSetup) {
+          debugPrint('[ROUTER] Redirecting: Owner needs to setup station');
+          return AppRoutes.ownerSignUp;
+        }
+        return null;
+      }
+
+      // 3. Rider missing ID Number -> Force Rider Signup
+      if (user.role == UserRole.customer &&
+          (user.idNumber == null || user.idNumber!.isEmpty)) {
+        if (location != AppRoutes.riderSignUp) {
+          debugPrint('[ROUTER] Redirecting: Rider needs to provide ID');
+          return AppRoutes.riderSignUp;
+        }
+        return null;
+      }
+
+      // 4. OWNER ACCESS CONTROL
+      if (isOwner) {
+        if (location == AppRoutes.home || location == '/') {
+          return AppRoutes.admin;
+        }
+        if (_isCustomerAuthRoute(location)) return AppRoutes.admin;
+      } else {
+        if (_isOwnerRoute(location)) return AppRoutes.home;
+      }
+
+      // 5. LOGIN ESCAPE
+      if (location == AppRoutes.login) {
+        return isOwner ? AppRoutes.admin : AppRoutes.home;
+      }
 
       return null;
     },
     routes: [
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/loading', builder: (_, __) => const _LoadingScreen()),
-      GoRoute(path: '/admin', builder: (_, __) => const AdminDashboard()),
-      GoRoute(path: '/shop-setup', builder: (_, __) => const ShopSetupScreen()),
-      GoRoute(path: '/home', builder: (_, __) => const CustomerHome()),
       GoRoute(
-        path: '/shop-detail',
-        builder: (_, state) {
-          final shop = state.extra as DiscoveryShop?;
-          if (shop == null) return const CustomerHome();
-          return ShopDetailScreen(shop: shop);
-        },
+          path: AppRoutes.onboarding,
+          builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+      GoRoute(
+          path: AppRoutes.roleSelection,
+          builder: (_, __) => const RoleSelectionScreen()),
+      GoRoute(
+          path: AppRoutes.riderSignUp,
+          builder: (_, __) => const RiderSignUpScreen()),
+      GoRoute(
+          path: AppRoutes.ownerSignUp,
+          builder: (_, __) => const OwnerSignUpScreen()),
+      GoRoute(
+          path: AppRoutes.forgotPassword,
+          builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+          path: AppRoutes.updatePassword,
+          builder: (_, __) => const UpdatePasswordScreen()),
+      GoRoute(
+          path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
+      GoRoute(
+        path: AppRoutes.admin,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Business Dashboard',
+          isOwnerView: true,
+        ),
       ),
-      GoRoute(path: '/ride', builder: (_, __) => const ActiveRideScreen()),
-      GoRoute(path: '/scan', builder: (_, __) => const ScanQrScreen()),
-      GoRoute(path: '/history', builder: (_, __) => const RideHistoryScreen()),
+      GoRoute(
+        path: AppRoutes.shopSetup,
+        builder: (_, __) => const CommonPlaceholderScreen(title: 'Shop Setup'),
+      ),
+      GoRoute(
+          path: AppRoutes.home,
+          builder: (_, __) => const DiscoveryHomeScreen()),
+      GoRoute(
+        path: AppRoutes.ride,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Activity',
+          tab: FloatingNavTab.activity,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.scan,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Scan QR',
+          tab: FloatingNavTab.scan,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (_, __) => const CommonPlaceholderScreen(
+          title: 'Profile Settings',
+        ),
+      ),
     ],
   );
 });
 
-// Shown while the profile row is being fetched after sign-in.
-// The router exits this screen automatically once currentUserProvider resolves.
-class _LoadingScreen extends StatelessWidget {
-  const _LoadingScreen();
+class BikeBuddyApp extends ConsumerStatefulWidget {
+  const BikeBuddyApp({super.key});
+  @override
+  ConsumerState<BikeBuddyApp> createState() => _BikeBuddyAppState();
+}
+
+class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
+  @override
+  void initState() {
+    super.initState();
+    try {
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        debugPrint('[AUTH] Auth State Changed: ${data.event.name}');
+        if (data.event == AuthChangeEvent.passwordRecovery) {
+          debugPrint('[AUTH] Password recovery event detected! Redirecting...');
+          ref.read(routerProvider).push(AppRoutes.updatePassword);
+        }
+      });
+    } catch (e) {
+      debugPrint('[AUTH] Error initializing listener: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-class BikeBuddyApp extends ConsumerWidget {
-  const BikeBuddyApp({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final theme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF00B248),
+        brightness: Brightness.dark,
+        surface: const Color(0xFF0D0D0D),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF0D0D0D),
+      useMaterial3: true,
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+    );
 
     return MaterialApp.router(
       title: 'Bike Buddy',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00C853),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00C853),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeMode.system,
+      theme: theme,
+      darkTheme: theme,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
     );
   }
