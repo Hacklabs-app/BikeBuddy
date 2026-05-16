@@ -19,10 +19,8 @@ class BikeBuddyBottomNav extends StatelessWidget {
     super.key,
   }) : isOwner = false;
 
-  const BikeBuddyBottomNav.owner({
-    required this.currentItem,
-    super.key,
-  })  : isOwner = true,
+  const BikeBuddyBottomNav.owner({required this.currentItem, super.key})
+      : isOwner = true,
         isLoggedIn = true;
 
   final BikeBuddyNavItem currentItem;

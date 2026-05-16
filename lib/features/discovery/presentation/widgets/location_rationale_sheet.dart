@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class LocationRationaleSheet extends StatelessWidget {
-  const LocationRationaleSheet({
-    super.key,
-    required this.onAccept,
-  });
+  const LocationRationaleSheet({super.key, required this.onAccept});
 
   final VoidCallback onAccept;
 
@@ -67,7 +64,7 @@ class LocationRationaleSheet extends StatelessWidget {
               child: const Text(
                 'Continue',
                 style: TextStyle(
-                  fontSize: 16, 
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: Colors.black,
                 ),

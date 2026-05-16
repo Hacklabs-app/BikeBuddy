@@ -6,12 +6,8 @@ import '../../../../core/models/discovery_shop.dart';
 import 'glass_container.dart';
 
 class ShopCard extends StatelessWidget {
-  const ShopCard({
-    super.key, 
-    required this.shop,
-    required this.onTap,
-  });
-  
+  const ShopCard({super.key, required this.shop, required this.onTap});
+
   final DiscoveryShop shop;
   final VoidCallback onTap;
 
@@ -153,7 +149,7 @@ class _AvailabilityIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isLow = count < 5;
     final bool isEmpty = count == 0;
-    final color = isEmpty 
+    final color = isEmpty
         ? Colors.white.withValues(alpha: 0.2)
         : (isLow ? const Color(0xFFFF5252) : AppColors.green);
 

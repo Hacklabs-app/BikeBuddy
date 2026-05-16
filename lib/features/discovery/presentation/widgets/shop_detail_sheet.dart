@@ -13,8 +13,8 @@ class ShopDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.simpleCurrency(locale: 'en_US');
     
-    // TODO: Link to real operating hours logic
-    const bool isOpen = true;
+    // In the future, this will be calculated from backend hours
+    final bool isOpen = DateTime.now().hour >= 8 && DateTime.now().hour < 20;
 
     return GlassContainer(
       borderRadius: 32,
@@ -172,7 +172,7 @@ class _StatusText extends StatelessWidget {
 }
 
 class _DotSeparator extends StatelessWidget {
-  const _DotSeparator({super.key});
+  const _DotSeparator();
   @override
   Widget build(BuildContext context) {
     return Padding(

@@ -17,7 +17,9 @@ class StorageService {
 }
 
 final storageServiceProvider = Provider<StorageService>((ref) {
-  throw UnimplementedError('storageServiceProvider must be overridden in ProviderScope');
+  throw UnimplementedError(
+    'storageServiceProvider must be overridden in ProviderScope',
+  );
 });
 
 final hasSeenOnboardingProvider = StateProvider<bool>((ref) {

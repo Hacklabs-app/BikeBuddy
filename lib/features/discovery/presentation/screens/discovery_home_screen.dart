@@ -16,10 +16,12 @@ class DiscoveryHomeScreen extends ConsumerStatefulWidget {
   const DiscoveryHomeScreen({super.key});
 
   @override
-  ConsumerState<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
+  ConsumerState<DiscoveryHomeScreen> createState() =>
+      _DiscoveryHomeScreenState();
 }
 
-class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen> with WidgetsBindingObserver {
+class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
+    with WidgetsBindingObserver {
   bool _isWaitingForLocation = false;
 
   @override
@@ -115,7 +117,9 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen> with 
                               if (filter == ShopFilter.nearest) {
                                 _handleLocationFilter(state);
                               } else {
-                                ref.read(discoveryProvider.notifier).updateFilter(filter);
+                                ref
+                                    .read(discoveryProvider.notifier)
+                                    .updateFilter(filter);
                               }
                             },
                             onNearestSelected: () {
@@ -133,36 +137,42 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen> with 
 
                 // Shop List
                 discoveryState.when(
-                  loading: () => const SliverFillRemaining(
-                    child: DiscoverySkeleton(),
-                  ),
+                  loading: () =>
+                      const SliverFillRemaining(child: DiscoverySkeleton()),
                   error: (err, _) => SliverFillRemaining(
-                    child: Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white60))),
+                    child: Center(
+                      child: Text(
+                        'Error: $err',
+                        style: const TextStyle(color: Colors.white60),
+                      ),
+                    ),
                   ),
                   data: (state) => SliverPadding(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 140),
-                    sliver: state.filteredShops.isEmpty 
-                      ? const SliverToBoxAdapter(
-                          child: Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 40),
-                              child: Text('No stations match your search.', 
-                                   style: TextStyle(color: Colors.white38)),
+                    sliver: state.filteredShops.isEmpty
+                        ? const SliverToBoxAdapter(
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 40),
+                                child: Text(
+                                  'No stations match your search.',
+                                  style: TextStyle(color: Colors.white38),
+                                ),
+                              ),
                             ),
-                          ),
-                        )
-                      : SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
                               final shop = state.filteredShops[index];
                               return ShopCard(
                                 shop: shop,
                                 onTap: () => _showShopDetails(shop),
                               );
-                            },
-                            childCount: state.filteredShops.length,
+                            }, childCount: state.filteredShops.length),
                           ),
-                        ),
                   ),
                 ),
               ],
@@ -174,9 +184,7 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen> with 
             bottom: 32,
             left: 24,
             right: 24,
-            child: _FloatingBottomNav(
-              onNavTap: () => context.push('/login'),
-            ),
+            child: _FloatingBottomNav(onNavTap: () => context.push('/login')),
           ),
         ],
       ),
@@ -237,7 +245,11 @@ class _ProfileIcon extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
-        child: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 24),
+        child: const Icon(
+          Icons.person_outline_rounded,
+          color: Colors.white,
+          size: 24,
+        ),
       ),
     );
   }
@@ -256,6 +268,7 @@ class _SearchInputState extends ConsumerState<_SearchInput> {
     _controller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -268,16 +281,24 @@ class _SearchInputState extends ConsumerState<_SearchInput> {
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.3), size: 20),
+          Icon(
+            Icons.search_rounded,
+            color: Colors.white.withValues(alpha: 0.3),
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: _controller,
-              onChanged: (val) => ref.read(discoveryProvider.notifier).updateSearch(val),
+              onChanged: (val) =>
+                  ref.read(discoveryProvider.notifier).updateSearch(val),
               style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
               decoration: InputDecoration(
                 hintText: 'Search stations...',
-                hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
+                hintStyle: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  fontSize: 15,
+                ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -291,7 +312,11 @@ class _SearchInputState extends ConsumerState<_SearchInput> {
                 ref.read(discoveryProvider.notifier).updateSearch('');
                 setState(() {});
               },
-              child: Icon(Icons.close_rounded, color: Colors.white.withValues(alpha: 0.3), size: 18),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white.withValues(alpha: 0.3),
+                size: 18,
+              ),
             ),
         ],
       ),
@@ -313,16 +338,38 @@ class _FloatingBottomNav extends StatelessWidget {
         borderRadius: BorderRadius.circular(38),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 40, offset: const Offset(0, 20)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          const _NavIcon(icon: Icons.explore_rounded, label: 'Stations', isActive: true),
-          GestureDetector(onTap: onNavTap, child: const _NavIcon(icon: Icons.account_balance_wallet_outlined, label: 'Wallet', isActive: false)),
+          const _NavIcon(
+            icon: Icons.explore_rounded,
+            label: 'Stations',
+            isActive: true,
+          ),
+          GestureDetector(
+            onTap: onNavTap,
+            child: const _NavIcon(
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Wallet',
+              isActive: false,
+            ),
+          ),
           _ScanHeroButton(onTap: onNavTap),
-          GestureDetector(onTap: onNavTap, child: const _NavIcon(icon: Icons.bar_chart_rounded, label: 'Activity', isActive: false)),
+          GestureDetector(
+            onTap: onNavTap,
+            child: const _NavIcon(
+              icon: Icons.bar_chart_rounded,
+              label: 'Activity',
+              isActive: false,
+            ),
+          ),
         ],
       ),
     );
@@ -330,19 +377,31 @@ class _FloatingBottomNav extends StatelessWidget {
 }
 
 class _NavIcon extends StatelessWidget {
-  const _NavIcon({required this.icon, required this.label, required this.isActive});
+  const _NavIcon({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+  });
   final IconData icon;
   final String label;
   final bool isActive;
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.green : Colors.white.withValues(alpha: 0.2);
+    final color =
+        isActive ? AppColors.green : Colors.white.withValues(alpha: 0.2);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(height: 4),
-        Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: isActive ? FontWeight.w800 : FontWeight.w500, color: color)),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+            color: color,
+          ),
+        ),
       ],
     );
   }
@@ -362,12 +421,23 @@ class _ScanHeroButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A), // Dark surface
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.green.withValues(alpha: 0.3), width: 2), // Subtle green ring
+          border: Border.all(
+            color: AppColors.green.withValues(alpha: 0.3),
+            width: 2,
+          ), // Subtle green ring
           boxShadow: [
-            BoxShadow(color: AppColors.green.withValues(alpha: 0.1), blurRadius: 15, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: AppColors.green.withValues(alpha: 0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        child: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.green, size: 28), // Green only on the icon
+        child: const Icon(
+          Icons.qr_code_scanner_rounded,
+          color: AppColors.green,
+          size: 28,
+        ), // Green only on the icon
       ),
     );
   }

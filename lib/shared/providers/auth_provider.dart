@@ -21,11 +21,8 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
 
   final client = Supabase.instance.client;
 
-  final data = await client
-      .from('profiles')
-      .select()
-      .eq('id', user.id)
-      .maybeSingle();
+  final data =
+      await client.from('profiles').select().eq('id', user.id).maybeSingle();
 
   if (data == null) return null;
 
@@ -39,9 +36,5 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
     shopId = shopData?['id'] as String?;
   }
 
-  return UserModel.fromMap({
-    ...data,
-    'email': user.email,
-    'shop_id': shopId,
-  });
+  return UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});
 });

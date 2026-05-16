@@ -3,10 +3,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 
 class UserLocation {
-  const UserLocation({
-    required this.latitude,
-    required this.longitude,
-  });
+  const UserLocation({required this.latitude, required this.longitude});
 
   final double latitude;
   final double longitude;
@@ -21,10 +18,7 @@ enum LocationRequestStatus {
 }
 
 class LocationRequestResult {
-  const LocationRequestResult._({
-    required this.status,
-    this.location,
-  });
+  const LocationRequestResult._({required this.status, this.location});
 
   final LocationRequestStatus status;
   final UserLocation? location;
@@ -76,7 +70,8 @@ class LocationService {
       // 2. Fallback to current position (Slight delay)
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium, // Lower accuracy is faster for discovery
+          accuracy:
+              LocationAccuracy.medium, // Lower accuracy is faster for discovery
           timeLimit: Duration(seconds: 8),
         ),
       );

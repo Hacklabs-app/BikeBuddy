@@ -74,10 +74,14 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.green : Colors.white.withValues(alpha: 0.05),
+          color: isSelected
+              ? AppColors.green
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.green : Colors.white.withValues(alpha: 0.1),
+            color: isSelected
+                ? AppColors.green
+                : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Row(
@@ -85,7 +89,9 @@ class _FilterChip extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.black : Colors.white.withValues(alpha: 0.6),
+              color: isSelected
+                  ? Colors.black
+                  : Colors.white.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 8),
             Text(
@@ -93,7 +99,9 @@ class _FilterChip extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.black : Colors.white.withValues(alpha: 0.6),
+                color: isSelected
+                    ? Colors.black
+                    : Colors.white.withValues(alpha: 0.6),
               ),
             ),
           ],

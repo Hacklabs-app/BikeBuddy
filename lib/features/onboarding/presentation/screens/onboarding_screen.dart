@@ -57,7 +57,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final size = MediaQuery.of(context).size;
 
     return onboardingState.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
       data: (pages) {
         final bool isLastPage = _currentPage >= pages.length - 1.5;
@@ -72,16 +73,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final double relativePosition = index - _currentPage;
-                  
+
                   // Motion Physics: Rotation + Opacity + Scale
-                  final double angle = relativePosition * 0.25 * math.pi; 
-                  final double opacity = (1.0 - relativePosition.abs()).clamp(0.0, 1.0);
+                  final double angle = relativePosition * 0.25 * math.pi;
+                  final double opacity = (1.0 - relativePosition.abs()).clamp(
+                    0.0,
+                    1.0,
+                  );
                   final double scale = 0.9 + (opacity * 0.1);
 
                   return Transform(
                     transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001) 
-                      ..setTranslationRaw(relativePosition * size.width, 0.0, 0.0)
+                      ..setEntry(3, 2, 0.001)
+                      ..setTranslationRaw(
+                        relativePosition * size.width,
+                        0.0,
+                        0.0,
+                      )
                       ..rotateZ(angle)
                       ..scaleByDouble(scale, scale, 1.0, 1.0),
                     alignment: Alignment.center,
@@ -127,14 +135,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     // Reactive Progress Indicators
                     Row(
                       children: List.generate(pages.length, (index) {
-                        final double active = (1.0 - (index - _currentPage).abs()).clamp(0.0, 1.0);
+                        final double active =
+                            (1.0 - (index - _currentPage).abs()).clamp(
+                          0.0,
+                          1.0,
+                        );
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           margin: const EdgeInsets.only(right: 8),
                           height: 2,
                           width: 16 + (active * 12),
                           decoration: BoxDecoration(
-                            color: AppColors.green.withValues(alpha: active.clamp(0.1, 1.0)),
+                            color: AppColors.green.withValues(
+                              alpha: active.clamp(0.1, 1.0),
+                            ),
                             borderRadius: BorderRadius.circular(1),
                           ),
                         );
@@ -186,7 +200,6 @@ class _OnboardingBody extends StatelessWidget {
             color: AppColors.green,
           ),
           SizedBox(height: isSmallScreen ? 48 : 64),
-          
           Text(
             page.subtitle,
             style: GoogleFonts.inter(
@@ -197,7 +210,6 @@ class _OnboardingBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
           Text(
             page.title,
             textAlign: TextAlign.center,
@@ -210,7 +222,6 @@ class _OnboardingBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          
           Text(
             page.description,
             textAlign: TextAlign.center,
@@ -244,7 +255,8 @@ class _ActionControl extends StatefulWidget {
   State<_ActionControl> createState() => _ActionControlState();
 }
 
-class _ActionControlState extends State<_ActionControl> with SingleTickerProviderStateMixin {
+class _ActionControlState extends State<_ActionControl>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _hoverController;
   late final Animation<double> _hoverAnimation;
 
@@ -325,7 +337,11 @@ class _ActionControlState extends State<_ActionControl> with SingleTickerProvide
                 child: child,
               );
             },
-            child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 22),
+            child: const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ],
       ),
