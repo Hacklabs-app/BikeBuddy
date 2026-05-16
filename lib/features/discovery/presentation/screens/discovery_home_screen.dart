@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/models/discovery_shop.dart';
+import '../../../../core/widgets/floating_bottom_nav.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../state/discovery_state.dart';
 import '../widgets/shop_card.dart';
 import '../widgets/filter_chips.dart';
@@ -38,17 +40,14 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // If we were waiting for the user to enable location and they just came back to the app
     if (state == AppLifecycleState.resumed && _isWaitingForLocation) {
       _checkLocationAndSort();
     }
   }
 
   Future<void> _checkLocationAndSort() async {
-    // 1. Force the UI to show the 'Nearest' filter is selected immediately
     ref.read(discoveryProvider.notifier).setFilter(ShopFilter.nearest);
 
-    // 2. Poll for the permission change (OS sometimes takes 100-300ms to update)
     for (int i = 0; i < 3; i++) {
       final hasPermission = await locationService.canUseLocationWithoutPrompt();
       if (hasPermission) {
@@ -59,18 +58,17 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
       await Future.delayed(const Duration(milliseconds: 200));
     }
 
-    // 3. If still no permission after polling, reset the flag
     setState(() => _isWaitingForLocation = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final discoveryState = ref.watch(discoveryProvider);
+    final isLoggedIn = ref.watch(authStateProvider).valueOrNull != null;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
-      // FIX: Ensure keyboard doesn't push the nav bar up
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -104,7 +102,15 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
                                 letterSpacing: -2,
                               ),
                             ),
-                            _ProfileIcon(onTap: () => context.push('/login')),
+                            _ProfileIcon(
+                              onTap: () {
+                                if (isLoggedIn) {
+                                  context.push('/profile');
+                                } else {
+                                  context.push('/login');
+                                }
+                              },
+                            ),
                           ],
                         ),
                         const SizedBox(height: 32),
@@ -180,11 +186,11 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
           ),
 
           // Floating Bottom Navigation
-          Positioned(
+          const Positioned(
             bottom: 32,
             left: 24,
             right: 24,
-            child: _FloatingBottomNav(onNavTap: () => context.push('/login')),
+            child: FloatingBottomNav(activeTab: FloatingNavTab.stations),
           ),
         ],
       ),
@@ -237,6 +243,7 @@ class _ProfileIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: 52,
         height: 52,
@@ -319,125 +326,6 @@ class _SearchInputState extends ConsumerState<_SearchInput> {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _FloatingBottomNav extends StatelessWidget {
-  const _FloatingBottomNav({required this.onNavTap});
-  final VoidCallback onNavTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 76,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161616),
-        borderRadius: BorderRadius.circular(38),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          const _NavIcon(
-            icon: Icons.explore_rounded,
-            label: 'Stations',
-            isActive: true,
-          ),
-          GestureDetector(
-            onTap: onNavTap,
-            child: const _NavIcon(
-              icon: Icons.account_balance_wallet_outlined,
-              label: 'Wallet',
-              isActive: false,
-            ),
-          ),
-          _ScanHeroButton(onTap: onNavTap),
-          GestureDetector(
-            onTap: onNavTap,
-            child: const _NavIcon(
-              icon: Icons.bar_chart_rounded,
-              label: 'Activity',
-              isActive: false,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavIcon extends StatelessWidget {
-  const _NavIcon({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-  });
-  final IconData icon;
-  final String label;
-  final bool isActive;
-  @override
-  Widget build(BuildContext context) {
-    final color =
-        isActive ? AppColors.green : Colors.white.withValues(alpha: 0.2);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ScanHeroButton extends StatelessWidget {
-  const _ScanHeroButton({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A), // Dark surface
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: AppColors.green.withValues(alpha: 0.3),
-            width: 2,
-          ), // Subtle green ring
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.green.withValues(alpha: 0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.qr_code_scanner_rounded,
-          color: AppColors.green,
-          size: 28,
-        ), // Green only on the icon
       ),
     );
   }

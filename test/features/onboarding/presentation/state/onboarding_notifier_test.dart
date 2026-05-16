@@ -29,7 +29,7 @@ void main() {
     test('initial state contains expected pages', () async {
       final container = makeContainer(mockStorageService);
       final listener = Listener<AsyncValue<List<Object>>>();
-      
+
       container.listen(
         onboardingProvider,
         listener.call,
@@ -44,7 +44,8 @@ void main() {
 
     test('completeOnboarding updates storage and state', () async {
       final container = makeContainer(mockStorageService);
-      when(() => mockStorageService.setHasSeenOnboarding()).thenAnswer((_) async => true);
+      when(() => mockStorageService.setHasSeenOnboarding())
+          .thenAnswer((_) async => true);
 
       expect(container.read(hasSeenOnboardingProvider), false);
 

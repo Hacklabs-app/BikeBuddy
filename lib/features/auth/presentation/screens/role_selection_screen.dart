@@ -1,23 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../app/app.dart';
 import 'package:bike_buddy/features/discovery/presentation/widgets/glass_container.dart';
+import '../../../../shared/providers/auth_provider.dart';
+import '../state/auth_state.dart';
 
-class RoleSelectionScreen extends StatelessWidget {
+class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoggedIn = ref.watch(authStateProvider).valueOrNull != null;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else if (isLoggedIn) {
+              // Fallback for forced redirects: logout to escape the loop
+              ref.read(authNotifierProvider.notifier).signOut();
+            } else {
+              // True Guest just clicked "Create Account", go back home
+              context.go('/home');
+            }
+          },
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
         ),
+        actions: [
+          if (isLoggedIn)
+            TextButton(
+              onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+              child: Text(
+                'SIGN OUT',
+                style: GoogleFonts.inter(
+                  color: Colors.white24,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -51,9 +84,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 description: 'I want to find and rent bikes at local stations.',
                 icon: Icons.pedal_bike_rounded,
                 color: AppColors.green,
-                onTap: () {
-                  // TODO: Navigate to Rider Sign Up
-                },
+                onTap: () => context.push(AppRoutes.riderSignUp),
               ),
               
               const SizedBox(height: 24),
@@ -64,9 +95,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 description: 'I want to manage my bikes, rentals, and revenue.',
                 icon: Icons.storefront_rounded,
                 color: const Color(0xFFB0B0B0), // Sophisticated Silver
-                onTap: () {
-                  // TODO: Show Owner Onboarding Message / Redirect
-                },
+                onTap: () => context.push(AppRoutes.ownerSignUp),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
-enum UserRole { owner, customer, guest }
+enum UserRole { owner, customer, pending }
 
 class UserModel {
   final String id;
@@ -34,7 +34,7 @@ class UserModel {
   static UserRole _parseRole(String? role) {
     if (role == 'owner') return UserRole.owner;
     if (role == 'customer') return UserRole.customer;
-    return UserRole.guest;
+    return UserRole.pending;
   }
 
   Map<String, dynamic> toMap() => {

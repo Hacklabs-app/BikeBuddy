@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/user_model.dart';
@@ -21,19 +22,26 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
 
   final client = Supabase.instance.client;
 
+  debugPrint('[API REQUEST] Fetching profile for user: ${user.id}');
   final data =
       await client.from('profiles').select().eq('id', user.id).maybeSingle();
 
-  if (data == null) return null;
+  if (data == null) {
+    debugPrint('[API RESPONSE] Profile not found for user: ${user.id}');
+    return null;
+  }
 
+  debugPrint('[API RESPONSE] Profile fetched successfully: ${data['role']}');
   String? shopId;
   if (data['role'] == 'owner') {
+    debugPrint('[API REQUEST] User is owner, fetching shop details...');
     final shopData = await client
         .from('shops')
         .select('id')
         .eq('owner_id', user.id)
         .maybeSingle();
     shopId = shopData?['id'] as String?;
+    debugPrint('[API RESPONSE] Shop ID: $shopId');
   }
 
   return UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});

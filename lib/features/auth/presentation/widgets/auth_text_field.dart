@@ -13,6 +13,7 @@ class AuthTextField extends StatelessWidget {
     this.validator,
     this.autofillHints,
     this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final String label;
@@ -24,6 +25,7 @@ class AuthTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Iterable<String>? autofillHints;
   final TextInputAction? textInputAction;
+  final TextCapitalization textCapitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +48,7 @@ class AuthTextField extends StatelessWidget {
           validator: validator,
           autofillHints: autofillHints,
           textInputAction: textInputAction,
+          textCapitalization: textCapitalization,
           style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             hintText: hint,

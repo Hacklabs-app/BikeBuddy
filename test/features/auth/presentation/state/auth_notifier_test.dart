@@ -26,11 +26,14 @@ void main() {
 
   group('AuthNotifier', () {
     test('signIn success updates state', () async {
-      when(() => mockRepo.signIn(email: 'test@example.com', password: 'password'))
+      when(() =>
+              mockRepo.signIn(email: 'test@example.com', password: 'password'))
           .thenAnswer((_) async => {});
       final container = makeContainer();
-      
-      final result = await container.read(authNotifierProvider.notifier).signIn('test@example.com', 'password');
+
+      final result = await container
+          .read(authNotifierProvider.notifier)
+          .signIn('test@example.com', 'password');
 
       expect(result, true);
       expect(container.read(authNotifierProvider).isLoading, false);
@@ -38,22 +41,29 @@ void main() {
     });
 
     test('signIn failure updates state with error', () async {
-      when(() => mockRepo.signIn(email: 'test@example.com', password: 'password'))
+      when(() =>
+              mockRepo.signIn(email: 'test@example.com', password: 'password'))
           .thenThrow(const AuthException('Invalid login credentials'));
       final container = makeContainer();
-      
-      final result = await container.read(authNotifierProvider.notifier).signIn('test@example.com', 'password');
+
+      final result = await container
+          .read(authNotifierProvider.notifier)
+          .signIn('test@example.com', 'password');
 
       expect(result, false);
       expect(container.read(authNotifierProvider).isLoading, false);
-      expect(container.read(authNotifierProvider).error, contains('Incorrect email or password'));
+      expect(container.read(authNotifierProvider).error,
+          contains('Incorrect email or password'));
     });
 
     test('sendPasswordReset calls repository', () async {
-      when(() => mockRepo.sendPasswordReset('test@example.com')).thenAnswer((_) async => {});
+      when(() => mockRepo.sendPasswordReset('test@example.com'))
+          .thenAnswer((_) async => {});
       final container = makeContainer();
 
-      final result = await container.read(authNotifierProvider.notifier).sendPasswordReset('test@example.com');
+      final result = await container
+          .read(authNotifierProvider.notifier)
+          .sendPasswordReset('test@example.com');
 
       expect(result, true);
       verify(() => mockRepo.sendPasswordReset('test@example.com')).called(1);

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockDiscoveryRepository extends Mock implements DiscoveryRepository {}
+
 class MockLocationService extends Mock implements LocationService {}
 
 void main() {
@@ -48,7 +49,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         discoveryRepositoryProvider.overrideWithValue(mockRepo),
-        // locationService is a global variable in location_service.dart, 
+        // locationService is a global variable in location_service.dart,
         // we might need to change how it's accessed if we want to mock it properly.
         // For now, let's see if we can use it as is or if we need to wrap it.
       ],
@@ -61,7 +62,7 @@ void main() {
     test('initial build loads shops and sorts by stock', () async {
       when(() => mockRepo.getShops()).thenAnswer((_) async => testShops);
       final container = makeContainer();
-      
+
       await container.read(discoveryProvider.future);
       final state = container.read(discoveryProvider).value!;
 
@@ -95,18 +96,20 @@ void main() {
       expect(state.filteredShops.length, 1);
       expect(state.filteredShops[0].name, 'Shop B');
     });
-   group('Sorting Logic', () {
-    test('rating sort is descending', () async {
-      when(() => mockRepo.getShops()).thenAnswer((_) async => testShops);
-      final container = makeContainer();
-      await container.read(discoveryProvider.future);
+    group('Sorting Logic', () {
+      test('rating sort is descending', () async {
+        when(() => mockRepo.getShops()).thenAnswer((_) async => testShops);
+        final container = makeContainer();
+        await container.read(discoveryProvider.future);
 
-      container.read(discoveryProvider.notifier).updateFilter(ShopFilter.rating);
-      final state = container.read(discoveryProvider).value!;
+        container
+            .read(discoveryProvider.notifier)
+            .updateFilter(ShopFilter.rating);
+        final state = container.read(discoveryProvider).value!;
 
-      // Shop B has 4.9, Shop A has 4.5
-      expect(state.filteredShops[0].id, '2');
+        // Shop B has 4.9, Shop A has 4.5
+        expect(state.filteredShops[0].id, '2');
+      });
     });
-  });
   });
 }

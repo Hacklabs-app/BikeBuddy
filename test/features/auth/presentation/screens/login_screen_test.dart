@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthNotifier extends StateNotifier<AuthState> with Mock implements AuthNotifier {
+class MockAuthNotifier extends StateNotifier<AuthState>
+    with Mock
+    implements AuthNotifier {
   MockAuthNotifier() : super(const AuthState());
 }
 
@@ -38,7 +40,8 @@ void main() {
       expect(find.text('Continue with Google'), findsOneWidget);
     });
 
-    testWidgets('shows validation errors when fields are empty', (tester) async {
+    testWidgets('shows validation errors when fields are empty',
+        (tester) async {
       await tester.pumpWidget(createTestWidget());
 
       await tester.tap(find.text('Sign In'));
@@ -56,7 +59,8 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       // Button should be disabled (onPressed is null)
-      final signInButton = tester.widget<FilledButton>(find.byType(FilledButton));
+      final signInButton =
+          tester.widget<FilledButton>(find.byType(FilledButton));
       expect(signInButton.onPressed, isNull);
     });
 

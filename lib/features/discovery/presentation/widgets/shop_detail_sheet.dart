@@ -12,7 +12,7 @@ class ShopDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.simpleCurrency(locale: 'en_US');
-    
+
     // In the future, this will be calculated from backend hours
     final bool isOpen = DateTime.now().hour >= 8 && DateTime.now().hour < 20;
 
@@ -35,7 +35,7 @@ class ShopDetailSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 48),
-          
+
           // Store Name
           Text(
             shop.name,
@@ -55,7 +55,7 @@ class ShopDetailSheet extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          
+
           const SizedBox(height: 48),
 
           // THE POWER ROW
@@ -65,7 +65,9 @@ class ShopDetailSheet extends StatelessWidget {
               _PowerData(
                 label: 'BIKES AVAILABLE',
                 value: shop.availableBikes.toString(),
-                color: shop.availableBikes < 5 ? const Color(0xFFFF5252) : AppColors.green,
+                color: shop.availableBikes < 5
+                    ? const Color(0xFFFF5252)
+                    : AppColors.green,
               ),
               _PowerData(
                 label: 'HOURLY RATE',
@@ -74,15 +76,16 @@ class ShopDetailSheet extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 40),
-          
+
           // THE STATUS LINE
           Container(
             padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
               border: Border.symmetric(
-                horizontal: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                horizontal:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
             ),
             child: Row(
@@ -95,7 +98,8 @@ class ShopDetailSheet extends StatelessWidget {
                 const _DotSeparator(),
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 16),
+                    const Icon(Icons.star_rounded,
+                        color: Color(0xFFFFD700), size: 16),
                     const SizedBox(width: 4),
                     _StatusText(
                       text: shop.rating.toStringAsFixed(1),
@@ -105,7 +109,8 @@ class ShopDetailSheet extends StatelessWidget {
                 ),
                 if (shop.distanceKm != null) ...[
                   const _DotSeparator(),
-                  _StatusText(text: '${shop.distanceKm!.toStringAsFixed(1)} KM AWAY'),
+                  _StatusText(
+                      text: '${shop.distanceKm!.toStringAsFixed(1)} KM AWAY'),
                 ],
               ],
             ),
@@ -117,7 +122,8 @@ class ShopDetailSheet extends StatelessWidget {
 }
 
 class _PowerData extends StatelessWidget {
-  const _PowerData({required this.label, required this.value, required this.color});
+  const _PowerData(
+      {required this.label, required this.value, required this.color});
   final String label;
   final String value;
   final Color color;

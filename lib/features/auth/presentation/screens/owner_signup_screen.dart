@@ -2,23 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
 
-class RiderSignUpScreen extends ConsumerStatefulWidget {
-  const RiderSignUpScreen({super.key});
+class OwnerSignUpScreen extends ConsumerStatefulWidget {
+  const OwnerSignUpScreen({super.key});
 
   @override
-  ConsumerState<RiderSignUpScreen> createState() => _RiderSignUpScreenState();
+  ConsumerState<OwnerSignUpScreen> createState() => _OwnerSignUpScreenState();
 }
 
-class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
+class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _idController = TextEditingController();
+  final _stationController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -28,7 +27,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _idController.dispose();
+    _stationController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -41,20 +40,23 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
       final isLoggedIn = authState != null;
       bool success = false;
 
+      final stationName = _stationController.text.trim();
+      final phoneNumber = _phoneController.text.trim();
+
+      debugPrint('[UI LOG] Attempting to save Owner data:');
+      debugPrint('│ Station: $stationName');
+      debugPrint('│ Phone: $phoneNumber');
+
       if (isLoggedIn) {
-        // CASE: GOOGLE INTERCEPTOR
-        // User already has an account, just saving missing profile data
+        // CASE: GOOGLE INTERCEPTOR or Manual signup without shop
         success = await ref
             .read(authNotifierProvider.notifier)
-            .completeRiderRegistration(
-              idNumber: _idController.text.trim(),
-              phoneNumber: _phoneController.text.trim().isEmpty
-                  ? null
-                  : _phoneController.text.trim(),
+            .completeOwnerRegistration(
+              stationName: stationName,
+              phoneNumber: phoneNumber,
             );
       } else {
         // CASE: MANUAL SIGN UP
-        // 1. Create the account
         final created = await ref.read(authNotifierProvider.notifier).signUp(
               email: _emailController.text.trim(),
               password: _passwordController.text,
@@ -62,22 +64,17 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
             );
 
         if (created) {
-          // 2. Profile is auto-created by DB trigger, now update the ID number
-          // (The router will stay here because id_number is still empty in the fresh row)
           success = await ref
               .read(authNotifierProvider.notifier)
-              .completeRiderRegistration(
-                idNumber: _idController.text.trim(),
-                phoneNumber: _phoneController.text.trim().isEmpty
-                    ? null
-                    : _phoneController.text.trim(),
+              .completeOwnerRegistration(
+                stationName: stationName,
+                phoneNumber: phoneNumber,
               );
         }
       }
 
       if (success && mounted) {
-        // Router will naturally redirect to /home once the ID number resolves in profiles
-        context.go('/home');
+        context.go('/admin'); // Owners go to Admin/Dashboard
       }
     }
   }
@@ -109,7 +106,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
               children: [
                 const SizedBox(height: 8),
                 Text(
-                  isGoogleUser ? 'One Last Step' : 'Create Rider Profile',
+                  isGoogleUser ? 'Register Station' : 'Join as an Owner',
                   style: GoogleFonts.inter(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -119,9 +116,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  isGoogleUser
-                      ? 'Please provide your ID to start riding.'
-                      : 'Enter your details to start pedaling.',
+                  'Set up your station and start managing rentals.',
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     color: Colors.white60,
@@ -141,7 +136,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   const SizedBox(height: 24),
                   AuthTextField(
                     label: 'Email',
-                    hint: 'name@example.com',
+                    hint: 'owner@example.com',
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -159,23 +154,27 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   const SizedBox(height: 24),
                 ],
                 AuthTextField(
-                  label: 'ID / Admission Number',
-                  hint: 'Registration number',
-                  controller: _idController,
-                  textCapitalization: TextCapitalization.characters,
+                  label: 'Station Name',
+                  hint: 'e.g. Central Park Bikes',
+                  controller: _stationController,
+                  textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? 'ID is required' : null,
+                  validator: (val) => (val == null || val.isEmpty)
+                      ? 'Station name is required'
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 AuthTextField(
-                  label: 'Phone (Optional)',
+                  label: 'Phone Number',
                   hint: '+254...',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   textInputAction: !isGoogleUser
                       ? TextInputAction.next
                       : TextInputAction.done,
+                  validator: (val) => (val == null || val.isEmpty)
+                      ? 'Phone number is required'
+                      : null,
                 ),
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
@@ -219,7 +218,6 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   ),
                 ],
                 const SizedBox(height: 40),
-
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -227,7 +225,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                     onPressed:
                         authNotifierState.isLoading ? null : _handleAction,
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.green,
+                      backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -240,9 +238,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                                 color: Colors.black, strokeWidth: 2),
                           )
                         : Text(
-                            isGoogleUser
-                                ? 'Finish Setup'
-                                : 'Complete Registration',
+                            'Launch Station',
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,

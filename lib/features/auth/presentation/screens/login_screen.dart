@@ -29,10 +29,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
       final success = await ref.read(authNotifierProvider.notifier).signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+
       if (success && mounted) {
         context.go('/home');
       }
@@ -50,7 +50,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.go('/onboarding'),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
         ),
       ),
       body: AutofillGroup(
@@ -72,19 +73,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 if (authState.error != null)
                   Container(
                     margin: const EdgeInsets.only(top: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.redAccent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+                      border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 18),
+                        const Icon(Icons.error_outline_rounded,
+                            color: Colors.redAccent, size: 18),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -124,20 +128,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   autofillHints: const [AutofillHints.password],
                   textInputAction: TextInputAction.done,
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Password is required';
+                    if (val == null || val.isEmpty) {
+                      return 'Password is required';
+                    }
                     if (val.length < 6) return 'At least 6 characters';
                     return null;
                   },
                   suffixIcon: IconButton(
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: Colors.white24,
                       size: 20,
                     ),
                   ),
                 ),
-                
+
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -152,7 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
 
                 // PRIMARY ACTION
@@ -171,7 +180,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                                color: Colors.black, strokeWidth: 2),
                           )
                         : Text(
                             'Sign In',
@@ -183,13 +193,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // DIVIDER
                 Row(
                   children: [
-                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.05))),
+                    Expanded(
+                        child: Divider(
+                            color: Colors.white.withValues(alpha: 0.05))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
@@ -200,13 +212,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.05))),
+                    Expanded(
+                        child: Divider(
+                            color: Colors.white.withValues(alpha: 0.05))),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
-                // GOOGLE
+
+                /* 
+                // GOOGLE - Temporarily disabled to focus on manual flow
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -243,9 +258,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                   ),
                 ),
-                
+                */
+
                 const SizedBox(height: 48),
-                
+
                 // FOOTER
                 Center(
                   child: Row(
@@ -253,7 +269,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text(
                         "Don't have an account? ",
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 14),
+                        style: GoogleFonts.inter(
+                            color: Colors.white38, fontSize: 14),
                       ),
                       GestureDetector(
                         onTap: () => context.push('/role-selection'),

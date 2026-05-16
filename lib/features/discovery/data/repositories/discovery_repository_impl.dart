@@ -1,12 +1,20 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/discovery_shop.dart';
 import '../../domain/repositories/discovery_repository.dart';
 
 class DiscoveryRepositoryImpl implements DiscoveryRepository {
   @override
   Future<List<DiscoveryShop>> getShops() async {
-    // Simulating a network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _mockShops;
+    debugPrint('[API REQUEST] Method: getShops');
+    try {
+      // Simulating a network delay
+      await Future.delayed(const Duration(milliseconds: 500));
+      debugPrint('[API RESPONSE] Method: getShops, Status: SUCCESS, Count: ${_mockShops.length}');
+      return _mockShops;
+    } catch (e) {
+      debugPrint('[API RESPONSE] Method: getShops, Status: FAILED, Error: $e');
+      rethrow;
+    }
   }
 
   final List<DiscoveryShop> _mockShops = [
