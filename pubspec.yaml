@@ -19,6 +19,8 @@ dependencies:
   intl: ^0.19.0
   flutter_launcher_icons: ^0.14.4
   geolocator: ^14.0.2
+  shared_preferences: ^2.5.5
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +29,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+
+#  fonts:
+#    - family: Helvetica
+#      fonts:
+#        - asset: assets/fonts/helvetica/Helvetica.ttf
+#        - asset: assets/fonts/helvetica/Helvetica-Bold.ttf
+#          weight: 700
+#        - asset: assets/fonts/helvetica/Helvetica-Black.ttf
+#          weight: 900

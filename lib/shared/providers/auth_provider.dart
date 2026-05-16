@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../features/auth/domain/entities/user_model.dart';
+import '../../core/models/user_model.dart';
 
 // Streams the current Supabase User — emits null when logged out.
 // Yields the cached session user first so the router doesn't flash /login
@@ -19,12 +19,29 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return null;
 
-  final data = await Supabase.instance.client
+  final client = Supabase.instance.client;
+
+  final data = await client
       .from('profiles')
       .select()
       .eq('id', user.id)
       .maybeSingle();
 
   if (data == null) return null;
-  return UserModel.fromMap(data);
+
+  String? shopId;
+  if (data['role'] == 'owner') {
+    final shopData = await client
+        .from('shops')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+    shopId = shopData?['id'] as String?;
+  }
+
+  return UserModel.fromMap({
+    ...data,
+    'email': user.email,
+    'shop_id': shopId,
+  });
 });
