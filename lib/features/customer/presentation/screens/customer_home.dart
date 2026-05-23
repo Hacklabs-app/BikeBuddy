@@ -116,8 +116,7 @@ class _CustomerHomeState extends ConsumerState<CustomerHome>
 
                       return SliverList.separated(
                         itemCount: shops.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 14),
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
                         itemBuilder: (context, index) {
                           final shop = shops[index];
                           return DiscoveryShopCard(
@@ -412,7 +411,8 @@ class _ErrorState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
       child: Column(
         children: [
-          const Icon(Icons.cloud_off_outlined, size: 44, color: AppColors.green),
+          const Icon(Icons.cloud_off_outlined,
+              size: 44, color: AppColors.green),
           const SizedBox(height: 12),
           Text(
             'Could not load shops',
