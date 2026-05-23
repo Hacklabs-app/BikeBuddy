@@ -33,8 +33,7 @@ class ShopDiscoveryNotifier extends AsyncNotifier<List<DiscoveryShop>> {
       }
     });
 
-    final shops =
-        await ref.read(shopDiscoveryDatasourceProvider).fetchShops();
+    final shops = await ref.read(shopDiscoveryDatasourceProvider).fetchShops();
     return _sortByDistance(shops);
   }
 
