@@ -48,11 +48,13 @@ class FloatingBottomNav extends ConsumerWidget {
             isActive: activeTab == FloatingNavTab.stations,
             onTap: () => context.go('/home'),
           ),
-          const SizedBox(width: 8),
-          _ScanHeroButton(
-            onTap: () => handleTap('/scan'),
-            isActive: activeTab == FloatingNavTab.scan,
-          ),
+          if (isLoggedIn) ...[
+            const SizedBox(width: 8),
+            _ScanHeroButton(
+              onTap: () => handleTap('/scan'),
+              isActive: activeTab == FloatingNavTab.scan,
+            ),
+          ],
           const SizedBox(width: 8),
           _NavIcon(
             icon: Icons.bar_chart_rounded,

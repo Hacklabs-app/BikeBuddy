@@ -22,20 +22,21 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp({
+  Future<AuthResponse> signUp({
     required String email,
     required String password,
     required String fullName,
   }) async {
     debugPrint('[API REQUEST] Method: signUp, Email: $email, Name: $fullName');
     try {
-      await _client.auth.signUp(
+      final res = await _client.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': fullName},
         emailRedirectTo: 'bikebuddy://login-callback',
       );
       debugPrint('[API RESPONSE] Method: signUp, Status: SUCCESS');
+      return res;
     } catch (e) {
       debugPrint('[API RESPONSE] Method: signUp, Status: FAILED, Error: $e');
       rethrow;

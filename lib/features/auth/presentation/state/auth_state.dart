@@ -62,7 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> signUp({
+  Future<AuthResponse?> signUp({
     required String email,
     required String password,
     required String fullName,
@@ -70,23 +70,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     debugPrint('[AUTH] Attempting sign up for: $email');
     state = state.copyWith(isEmailLoading: true, error: null);
     try {
-      await _repository.signUp(
+      final res = await _repository.signUp(
           email: email, password: password, fullName: fullName);
       debugPrint('[AUTH] Sign up successful!');
-      if (!mounted) return true;
+      if (!mounted) return res;
       state = state.copyWith(isEmailLoading: false);
-      return true;
+      return res;
     } on AuthException catch (e) {
       debugPrint('[AUTH] Sign up failed (AuthException): ${e.message}');
-      if (!mounted) return false;
+      if (!mounted) return null;
       state = state.copyWith(isEmailLoading: false, error: e.message);
-      return false;
+      return null;
     } catch (e) {
       debugPrint('[AUTH] Sign up failed (Unknown): $e');
-      if (!mounted) return false;
+      if (!mounted) return null;
       state =
           state.copyWith(isEmailLoading: false, error: 'Registration failed.');
-      return false;
+      return null;
     }
   }
 

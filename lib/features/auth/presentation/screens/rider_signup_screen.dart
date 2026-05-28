@@ -57,18 +57,15 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
               phoneNumber: normalizedPhone,
             );
       } else {
-        // CASE: MANUAL SIGN UP
-        // 1. Create the account
-        final created = await ref.read(authNotifierProvider.notifier).signUp(
+        final response = await ref.read(authNotifierProvider.notifier).signUp(
               email: _emailController.text.trim(),
               password: _passwordController.text,
               fullName: _nameController.text.trim(),
             );
 
-        if (created) {
-          // Check if user is logged in (i.e. email confirmation is disabled)
-          final currentAuthState = ref.read(authStateProvider).valueOrNull;
-          if (currentAuthState != null) {
+        if (response != null) {
+          final isEmailVerificationRequired = response.session == null;
+          if (!isEmailVerificationRequired) {
             // 2. Profile is auto-created by DB trigger, now update the ID number
             success = await ref
                 .read(authNotifierProvider.notifier)
@@ -79,6 +76,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
           } else {
             // Email verification is required, so user is not logged in yet.
             await ref.read(storageServiceProvider).setPendingRegistrationRole('customer');
+            ref.read(pendingRegistrationRoleProvider.notifier).state = 'customer';
             if (mounted) {
               context.go('/email-verification');
               return;

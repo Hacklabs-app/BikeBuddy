@@ -60,18 +60,15 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
               stationName: stationName,
               phoneNumber: normalizedPhone,
             );
-      } else {
-        // CASE: MANUAL SIGN UP
-        final created = await ref.read(authNotifierProvider.notifier).signUp(
+        final response = await ref.read(authNotifierProvider.notifier).signUp(
               email: _emailController.text.trim(),
               password: _passwordController.text,
               fullName: _nameController.text.trim(),
             );
 
-        if (created) {
-          // Check if user is logged in (i.e. email confirmation is disabled)
-          final currentAuthState = ref.read(authStateProvider).valueOrNull;
-          if (currentAuthState != null) {
+        if (response != null) {
+          final isEmailVerificationRequired = response.session == null;
+          if (!isEmailVerificationRequired) {
             success = await ref
                 .read(authNotifierProvider.notifier)
                 .completeOwnerRegistration(
@@ -81,6 +78,7 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
           } else {
             // Email verification is required, so user is not logged in yet.
             await ref.read(storageServiceProvider).setPendingRegistrationRole('owner');
+            ref.read(pendingRegistrationRoleProvider.notifier).state = 'owner';
             if (mounted) {
               context.go('/email-verification');
               return;
