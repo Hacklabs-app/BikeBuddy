@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
@@ -41,11 +42,11 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
       bool success = false;
 
       final stationName = _stationController.text.trim();
-      final phoneNumber = _phoneController.text.trim();
+      final normalizedPhone = Formatters.normalizePhoneNumber(_phoneController.text.trim()) ?? '';
 
       debugPrint('[UI LOG] Attempting to save Owner data:');
       debugPrint('│ Station: $stationName');
-      debugPrint('│ Phone: $phoneNumber');
+      debugPrint('│ Phone: $normalizedPhone');
 
       if (isLoggedIn) {
         // CASE: GOOGLE INTERCEPTOR or Manual signup without shop
@@ -53,7 +54,7 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
             .read(authNotifierProvider.notifier)
             .completeOwnerRegistration(
               stationName: stationName,
-              phoneNumber: phoneNumber,
+              phoneNumber: normalizedPhone,
             );
       } else {
         // CASE: MANUAL SIGN UP
@@ -68,7 +69,7 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
               .read(authNotifierProvider.notifier)
               .completeOwnerRegistration(
                 stationName: stationName,
-                phoneNumber: phoneNumber,
+                phoneNumber: normalizedPhone,
               );
         }
       }
@@ -173,9 +174,15 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                   textInputAction: !isGoogleUser
                       ? TextInputAction.next
                       : TextInputAction.done,
-                  validator: (val) => (val == null || val.isEmpty)
-                      ? 'Phone number is required'
-                      : null,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'Phone number is required';
+                    }
+                    if (!Formatters.isValidPhoneNumber(val)) {
+                      return 'Enter a valid phone number (e.g. 0701234567)';
+                    }
+                    return null;
+                  },
                 ),
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
@@ -218,7 +225,7 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                     },
                   ),
                 ],
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 56,

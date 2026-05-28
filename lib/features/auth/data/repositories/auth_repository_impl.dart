@@ -141,7 +141,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _client.auth.resetPasswordForEmail(
         email,
-        redirectTo: 'https://hacklabs.app/bikebuddy/callback',
+        redirectTo: 'bikebuddy://login-callback',
       );
       debugPrint('[API RESPONSE] Method: sendPasswordReset, Status: SUCCESS');
     } catch (e) {

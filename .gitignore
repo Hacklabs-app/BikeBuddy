@@ -61,6 +61,8 @@ doc/api/
 .env*
 .env.dev
 .env.prod
+env.*.json
+.antigravitycli/
 # Avoid committing generated Javascript files:
 *.dart.js
 # Produced by the --dump-info flag.

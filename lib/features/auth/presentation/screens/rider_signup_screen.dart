@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
@@ -41,6 +42,8 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
       final isLoggedIn = authState != null;
       bool success = false;
 
+      final normalizedPhone = Formatters.normalizePhoneNumber(_phoneController.text);
+
       if (isLoggedIn) {
         // CASE: GOOGLE INTERCEPTOR
         // User already has an account, just saving missing profile data
@@ -48,9 +51,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
             .read(authNotifierProvider.notifier)
             .completeRiderRegistration(
               idNumber: _idController.text.trim(),
-              phoneNumber: _phoneController.text.trim().isEmpty
-                  ? null
-                  : _phoneController.text.trim(),
+              phoneNumber: normalizedPhone,
             );
       } else {
         // CASE: MANUAL SIGN UP
@@ -68,9 +69,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
               .read(authNotifierProvider.notifier)
               .completeRiderRegistration(
                 idNumber: _idController.text.trim(),
-                phoneNumber: _phoneController.text.trim().isEmpty
-                    ? null
-                    : _phoneController.text.trim(),
+                phoneNumber: normalizedPhone,
               );
         }
       }
@@ -165,8 +164,15 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   controller: _idController,
                   textCapitalization: TextCapitalization.characters,
                   textInputAction: TextInputAction.next,
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? 'ID is required' : null,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'ID / Admission number is required';
+                    }
+                    if (!Formatters.isValidIdOrAdmission(val)) {
+                      return 'Enter a valid ID (7-9 digits) or Admission number';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
                 AuthTextField(
@@ -177,6 +183,12 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   textInputAction: !isGoogleUser
                       ? TextInputAction.next
                       : TextInputAction.done,
+                  validator: (val) {
+                    if (val != null && val.isNotEmpty && !Formatters.isValidPhoneNumber(val)) {
+                      return 'Enter a valid phone number (e.g. 0701234567)';
+                    }
+                    return null;
+                  },
                 ),
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
@@ -219,7 +231,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                     },
                   ),
                 ],
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 56,

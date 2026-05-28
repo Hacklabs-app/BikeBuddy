@@ -18,6 +18,7 @@ import '../features/auth/presentation/screens/update_password_screen.dart';
 import '../features/auth/presentation/screens/role_selection_screen.dart';
 import '../features/auth/presentation/screens/rider_signup_screen.dart';
 import '../features/auth/presentation/screens/owner_signup_screen.dart';
+import '../features/auth/presentation/screens/email_verification_screen.dart';
 
 // Route constant names for easier management
 class AppRoutes {
@@ -35,6 +36,7 @@ class AppRoutes {
   static const ride = '/ride';
   static const scan = '/scan';
   static const profile = '/profile';
+  static const emailVerification = '/email-verification';
 }
 
 const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
@@ -64,6 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ? AppRoutes.home
         : AppRoutes.onboarding,
     refreshListenable: refreshListenable,
+    debugLogDiagnostics: true,
     redirect: (context, state) {
       final location = state.matchedLocation;
 
@@ -90,6 +93,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       if (hasSeenOnboarding && location == AppRoutes.onboarding) {
         return AppRoutes.home;
+      }
+
+      // ── Email Verification Guard ───────────────────────────────────────────
+      if (isLoggedIn) {
+        final isEmailVerified = authState.valueOrNull?.emailConfirmedAt != null;
+        if (!isEmailVerified) {
+          if (location != AppRoutes.emailVerification) {
+            debugPrint('[ROUTER] Redirecting: Logged in user needs email verification');
+            return AppRoutes.emailVerification;
+          }
+          return null;
+        }
       }
 
       // ── Guest Guard ───────────────────────────────────────────────────────
@@ -177,6 +192,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           builder: (_, __) => const UpdatePasswordScreen()),
       GoRoute(
           path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
+      GoRoute(
+          path: AppRoutes.emailVerification, builder: (_, __) => const EmailVerificationScreen()),
       GoRoute(
         path: AppRoutes.admin,
         builder: (_, __) => const CommonPlaceholderScreen(
