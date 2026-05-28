@@ -142,6 +142,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
+      // Handle the initial root path '/' (e.g. from deep links) gracefully by redirecting
+      // to home or onboarding based on application state, avoiding 404s.
+      if (location == '/') {
+        final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
+        if (!hasSeenOnboarding) return AppRoutes.onboarding;
+        final authState = ref.read(authStateProvider);
+        final isLoggedIn = authState.valueOrNull != null;
+        if (isLoggedIn) {
+          final user = ref.read(currentUserProvider).valueOrNull;
+          final isOwner = user?.role == UserRole.owner;
+          return isOwner ? AppRoutes.admin : AppRoutes.home;
+        }
+        return AppRoutes.home;
+      }
+
       // Allow password update and forgot-password screens to pass through without redirection
       if (location == AppRoutes.updatePassword || location == AppRoutes.forgotPassword) {
         return null;
@@ -291,6 +306,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
       GoRoute(
           path: AppRoutes.emailVerification, builder: (_, __) => const EmailVerificationScreen()),
+      GoRoute(
+          path: '/', builder: (_, __) => const LoadingScreen()),
       GoRoute(
           path: '/login-callback', builder: (_, __) => const SizedBox.shrink()),
       GoRoute(
