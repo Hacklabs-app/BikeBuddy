@@ -45,7 +45,8 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
       final isLoggedIn = authState != null;
       bool success = false;
 
-      final normalizedPhone = Formatters.normalizePhoneNumber(_phoneController.text);
+      final normalizedPhone =
+          Formatters.normalizePhoneNumber(_phoneController.text);
 
       if (isLoggedIn) {
         // CASE: GOOGLE INTERCEPTOR
@@ -75,8 +76,11 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                 );
           } else {
             // Email verification is required, so user is not logged in yet.
-            await ref.read(storageServiceProvider).setPendingRegistrationRole('customer');
-            ref.read(pendingRegistrationRoleProvider.notifier).state = 'customer';
+            await ref
+                .read(storageServiceProvider)
+                .setPendingRegistrationRole('customer');
+            ref.read(pendingRegistrationRoleProvider.notifier).state =
+                'customer';
             if (mounted) {
               context.go('/email-verification');
               return;
@@ -223,7 +227,9 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.done,
                     validator: (val) {
-                      if (val != null && val.isNotEmpty && !Formatters.isValidPhoneNumber(val)) {
+                      if (val != null &&
+                          val.isNotEmpty &&
+                          !Formatters.isValidPhoneNumber(val)) {
                         return 'Enter a valid phone number (e.g. 0701234567)';
                       }
                       return null;
@@ -305,9 +311,11 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final url = Uri.parse('https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
+                                    final url = Uri.parse(
+                                        'https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
                                     if (await canLaunchUrl(url)) {
-                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                      await launchUrl(url,
+                                          mode: LaunchMode.externalApplication);
                                     }
                                   },
                                   child: RichText(
@@ -323,7 +331,8 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                                           style: GoogleFonts.inter(
                                             color: AppColors.green,
                                             fontWeight: FontWeight.bold,
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ],

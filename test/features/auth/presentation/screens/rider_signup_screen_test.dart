@@ -40,7 +40,7 @@ void main() {
 
       expect(find.text('Full Name'), findsOneWidget);
       expect(find.text('Email'), findsOneWidget);
-      expect(find.text('ID / Admission Number'), findsOneWidget);
+      expect(find.text('ID / Admission Number'), findsNothing);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Confirm Password'), findsOneWidget);
     });
@@ -70,7 +70,6 @@ void main() {
 
       expect(find.text('Name is required'), findsOneWidget);
       expect(find.text('Email is required'), findsOneWidget);
-      expect(find.text('ID is required'), findsOneWidget);
     });
   });
 }

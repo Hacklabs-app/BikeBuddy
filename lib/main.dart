@@ -22,16 +22,22 @@ void main() async {
       final statusCode = error.statusCode;
 
       String displayMessage = message;
-      if (statusCode == 'otp_expired' || (code == 'access_denied' && message.toLowerCase().contains('expired'))) {
-        displayMessage = 'The verification link has expired or already been used. Please request a new link.';
+      if (statusCode == 'otp_expired' ||
+          (code == 'access_denied' &&
+              message.toLowerCase().contains('expired'))) {
+        displayMessage =
+            'The verification link has expired or already been used. Please request a new link.';
       } else if (code == 'bad_code_verifier') {
-        displayMessage = 'The login verification has expired. Please try signing in again.';
+        displayMessage =
+            'The login verification has expired. Please try signing in again.';
       }
 
       _showGlobalSnackBar(displayMessage, isError: true);
       return true; // Marked as handled
     } else if (error is SocketException || error is TimeoutException) {
-      _showGlobalSnackBar('Connection error. Please check your internet connection and try again.', isError: true);
+      _showGlobalSnackBar(
+          'Connection error. Please check your internet connection and try again.',
+          isError: true);
       return true; // Handled
     }
 
@@ -66,7 +72,9 @@ void _showGlobalSnackBar(String message, {bool isError = false}) {
       content: Row(
         children: [
           Icon(
-            isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+            isError
+                ? Icons.error_outline_rounded
+                : Icons.check_circle_outline_rounded,
             color: isError ? Colors.redAccent : const Color(0xFF00B248),
             size: 20,
           ),

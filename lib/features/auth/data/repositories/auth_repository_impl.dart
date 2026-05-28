@@ -35,7 +35,7 @@ class AuthRepositoryImpl implements AuthRepository {
         data: {'full_name': fullName},
         emailRedirectTo: 'bikebuddy://login-callback',
       );
-      
+
       final identities = res.user?.identities;
       if (res.user != null && identities != null && identities.isEmpty) {
         throw const AuthException(

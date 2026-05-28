@@ -46,7 +46,8 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
       bool success = false;
 
       final stationName = _stationController.text.trim();
-      final normalizedPhone = Formatters.normalizePhoneNumber(_phoneController.text.trim()) ?? '';
+      final normalizedPhone =
+          Formatters.normalizePhoneNumber(_phoneController.text.trim()) ?? '';
 
       debugPrint('[UI LOG] Attempting to save Owner data:');
       debugPrint('│ Station: $stationName');
@@ -78,7 +79,9 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                 );
           } else {
             // Email verification is required, so user is not logged in yet.
-            await ref.read(storageServiceProvider).setPendingRegistrationRole('owner');
+            await ref
+                .read(storageServiceProvider)
+                .setPendingRegistrationRole('owner');
             ref.read(pendingRegistrationRoleProvider.notifier).state = 'owner';
             if (mounted) {
               context.go('/email-verification');
@@ -302,9 +305,11 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final url = Uri.parse('https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
+                                    final url = Uri.parse(
+                                        'https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
                                     if (await canLaunchUrl(url)) {
-                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                      await launchUrl(url,
+                                          mode: LaunchMode.externalApplication);
                                     }
                                   },
                                   child: RichText(
@@ -320,7 +325,8 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                                           style: GoogleFonts.inter(
                                             color: AppColors.green,
                                             fontWeight: FontWeight.bold,
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ],

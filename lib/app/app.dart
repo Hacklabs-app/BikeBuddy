@@ -60,7 +60,9 @@ void _showRouterSnackBar(String message, {bool isError = false}) {
       content: Row(
         children: [
           Icon(
-            isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+            isError
+                ? Icons.error_outline_rounded
+                : Icons.check_circle_outline_rounded,
             color: isError ? Colors.redAccent : const Color(0xFF00B248),
             size: 20,
           ),
@@ -126,11 +128,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         final errorDescription = params['error_description'];
 
         if (error != null || errorCode != null) {
-          debugPrint('[ROUTER] Deep-link error callback: $error ($errorCode): $errorDescription');
+          debugPrint(
+              '[ROUTER] Deep-link error callback: $error ($errorCode): $errorDescription');
 
-          String displayMessage = errorDescription?.replaceAll('+', ' ') ?? 'Verification link error.';
-          if (errorCode == 'otp_expired' || error == 'access_denied' || displayMessage.toLowerCase().contains('expired') || displayMessage.toLowerCase().contains('invalid')) {
-            displayMessage = 'The verification link has expired or already been used. Please request a new link.';
+          String displayMessage = errorDescription?.replaceAll('+', ' ') ??
+              'Verification link error.';
+          if (errorCode == 'otp_expired' ||
+              error == 'access_denied' ||
+              displayMessage.toLowerCase().contains('expired') ||
+              displayMessage.toLowerCase().contains('invalid')) {
+            displayMessage =
+                'The verification link has expired or already been used. Please request a new link.';
           }
 
           final msg = displayMessage;
@@ -158,7 +166,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Allow password update and forgot-password screens to pass through without redirection
-      if (location == AppRoutes.updatePassword || location == AppRoutes.forgotPassword) {
+      if (location == AppRoutes.updatePassword ||
+          location == AppRoutes.forgotPassword) {
         return null;
       }
 
@@ -192,7 +201,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         final isEmailVerified = authState.valueOrNull?.emailConfirmedAt != null;
         if (!isEmailVerified) {
           if (location != AppRoutes.emailVerification) {
-            debugPrint('[ROUTER] Redirecting: Logged in user needs email verification');
+            debugPrint(
+                '[ROUTER] Redirecting: Logged in user needs email verification');
             return AppRoutes.emailVerification;
           }
           return null;
@@ -231,10 +241,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (!_isRegistrationRoute(location)) {
           final pendingRole = ref.read(pendingRegistrationRoleProvider);
           if (pendingRole == 'customer') {
-            debugPrint('[ROUTER] Redirecting directly to Rider Signup based on local preference');
+            debugPrint(
+                '[ROUTER] Redirecting directly to Rider Signup based on local preference');
             return AppRoutes.riderSignUp;
           } else if (pendingRole == 'owner') {
-            debugPrint('[ROUTER] Redirecting directly to Owner Signup based on local preference');
+            debugPrint(
+                '[ROUTER] Redirecting directly to Owner Signup based on local preference');
             return AppRoutes.ownerSignUp;
           }
 
@@ -305,9 +317,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
       GoRoute(
-          path: AppRoutes.emailVerification, builder: (_, __) => const EmailVerificationScreen()),
-      GoRoute(
-          path: '/', builder: (_, __) => const LoadingScreen()),
+          path: AppRoutes.emailVerification,
+          builder: (_, __) => const EmailVerificationScreen()),
+      GoRoute(path: '/', builder: (_, __) => const LoadingScreen()),
       GoRoute(
           path: '/login-callback', builder: (_, __) => const SizedBox.shrink()),
       GoRoute(

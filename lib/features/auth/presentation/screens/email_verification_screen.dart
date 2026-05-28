@@ -49,8 +49,6 @@ class _EmailVerificationScreenState
     });
   }
 
-
-
   Future<void> _resendEmail(String email) async {
     if (_isResending || _resendCooldown > 0) return;
     setState(() {
@@ -140,7 +138,8 @@ class _EmailVerificationScreenState
             child: Center(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0, vertical: 20.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -221,7 +220,8 @@ class _EmailVerificationScreenState
                         decoration: BoxDecoration(
                           color: AppColors.green.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.green.withValues(alpha: 0.2)),
+                          border: Border.all(
+                              color: AppColors.green.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [
@@ -249,7 +249,8 @@ class _EmailVerificationScreenState
                         decoration: BoxDecoration(
                           color: Colors.redAccent.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+                          border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [
@@ -281,7 +282,8 @@ class _EmailVerificationScreenState
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.green,
                           foregroundColor: Colors.black,
-                          disabledBackgroundColor: AppColors.green.withValues(alpha: 0.3),
+                          disabledBackgroundColor:
+                              AppColors.green.withValues(alpha: 0.3),
                           disabledForegroundColor: Colors.black38,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -289,23 +291,24 @@ class _EmailVerificationScreenState
                           elevation: 0,
                         ),
                         child: _isResending
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.black),
+                                ),
+                              )
+                            : Text(
+                                _resendCooldown > 0
+                                    ? 'Resend email in ${_resendCooldown}s'
+                                    : 'Resend Verification Email',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            )
-                          : Text(
-                              _resendCooldown > 0
-                                  ? 'Resend email in ${_resendCooldown}s'
-                                  : 'Resend Verification Email',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -313,7 +316,8 @@ class _EmailVerificationScreenState
                     // Logout Escape Row
                     TextButton.icon(
                       onPressed: _handleSignOut,
-                      icon: const Icon(Icons.logout_rounded, size: 16, color: Colors.white38),
+                      icon: const Icon(Icons.logout_rounded,
+                          size: 16, color: Colors.white38),
                       label: Text(
                         'Cancel and Sign Out',
                         style: GoogleFonts.inter(
