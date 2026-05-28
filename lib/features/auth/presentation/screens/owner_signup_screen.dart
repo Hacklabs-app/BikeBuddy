@@ -60,6 +60,7 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
               stationName: stationName,
               phoneNumber: normalizedPhone,
             );
+      } else {
         final response = await ref.read(authNotifierProvider.notifier).signUp(
               email: _emailController.text.trim(),
               password: _passwordController.text,
@@ -136,6 +137,35 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                     color: Colors.white60,
                   ),
                 ),
+                if (authNotifierState.error != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline_rounded,
+                            color: Colors.redAccent, size: 18),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            authNotifierState.error!,
+                            style: GoogleFonts.inter(
+                              color: Colors.redAccent,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 40),
                 if (!isGoogleUser) ...[
                   AuthTextField(

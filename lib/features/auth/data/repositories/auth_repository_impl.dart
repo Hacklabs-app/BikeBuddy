@@ -35,6 +35,15 @@ class AuthRepositoryImpl implements AuthRepository {
         data: {'full_name': fullName},
         emailRedirectTo: 'bikebuddy://login-callback',
       );
+      
+      final identities = res.user?.identities;
+      if (res.user != null && identities != null && identities.isEmpty) {
+        throw const AuthException(
+          'An account with this email already exists. Please log in instead.',
+          statusCode: '400',
+        );
+      }
+
       debugPrint('[API RESPONSE] Method: signUp, Status: SUCCESS');
       return res;
     } catch (e) {
