@@ -18,6 +18,7 @@ import '../features/auth/presentation/screens/update_password_screen.dart';
 import '../features/auth/presentation/screens/role_selection_screen.dart';
 import '../features/auth/presentation/screens/rider_signup_screen.dart';
 import '../features/auth/presentation/screens/owner_signup_screen.dart';
+import '../features/auth/presentation/screens/email_verification_screen.dart';
 
 // Route constant names for easier management
 class AppRoutes {
@@ -35,6 +36,7 @@ class AppRoutes {
   static const ride = '/ride';
   static const scan = '/scan';
   static const profile = '/profile';
+  static const emailVerification = '/email-verification';
 }
 
 const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
@@ -48,6 +50,46 @@ const _registrationRoutes = [
 bool _isOwnerRoute(String loc) => _ownerRoutes.contains(loc);
 bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.contains(loc);
 bool _isRegistrationRoute(String loc) => _registrationRoutes.contains(loc);
+
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+void _showRouterSnackBar(String message, {bool isError = false}) {
+  scaffoldMessengerKey.currentState?.clearSnackBars();
+  scaffoldMessengerKey.currentState?.showSnackBar(
+    SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            isError
+                ? Icons.error_outline_rounded
+                : Icons.check_circle_outline_rounded,
+            color: isError ? Colors.redAccent : const Color(0xFF00B248),
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFF1E1E24),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      duration: const Duration(seconds: 4),
+    ),
+  );
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ValueNotifier<bool>(false);
@@ -64,8 +106,70 @@ final routerProvider = Provider<GoRouter>((ref) {
         ? AppRoutes.home
         : AppRoutes.onboarding,
     refreshListenable: refreshListenable,
+    debugLogDiagnostics: true,
     redirect: (context, state) {
       final location = state.matchedLocation;
+
+      // Intercept and handle /login-callback deep link errors gracefully without showing "Page Not Found"
+      if (location.startsWith('/login-callback')) {
+        final uri = state.uri;
+        final params = {...uri.queryParameters};
+
+        // Support fragment parsing since some auth servers return parameters in fragment after '#'
+        if (uri.fragment.isNotEmpty) {
+          try {
+            final fragmentUri = Uri.parse('?${uri.fragment}');
+            params.addAll(fragmentUri.queryParameters);
+          } catch (_) {}
+        }
+
+        final error = params['error'];
+        final errorCode = params['error_code'];
+        final errorDescription = params['error_description'];
+
+        if (error != null || errorCode != null) {
+          debugPrint(
+              '[ROUTER] Deep-link error callback: $error ($errorCode): $errorDescription');
+
+          String displayMessage = errorDescription?.replaceAll('+', ' ') ??
+              'Verification link error.';
+          if (errorCode == 'otp_expired' ||
+              error == 'access_denied' ||
+              displayMessage.toLowerCase().contains('expired') ||
+              displayMessage.toLowerCase().contains('invalid')) {
+            displayMessage =
+                'The verification link has expired or already been used. Please request a new link.';
+          }
+
+          final msg = displayMessage;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showRouterSnackBar(msg, isError: true);
+          });
+        }
+
+        return AppRoutes.home;
+      }
+
+      // Handle the initial root path '/' (e.g. from deep links) gracefully by redirecting
+      // to home or onboarding based on application state, avoiding 404s.
+      if (location == '/') {
+        final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
+        if (!hasSeenOnboarding) return AppRoutes.onboarding;
+        final authState = ref.read(authStateProvider);
+        final isLoggedIn = authState.valueOrNull != null;
+        if (isLoggedIn) {
+          final user = ref.read(currentUserProvider).valueOrNull;
+          final isOwner = user?.role == UserRole.owner;
+          return isOwner ? AppRoutes.admin : AppRoutes.home;
+        }
+        return AppRoutes.home;
+      }
+
+      // Allow password update and forgot-password screens to pass through without redirection
+      if (location == AppRoutes.updatePassword ||
+          location == AppRoutes.forgotPassword) {
+        return null;
+      }
 
       final authState = ref.read(authStateProvider);
       final userAsync = ref.read(currentUserProvider);
@@ -92,6 +196,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.home;
       }
 
+      // ── Email Verification Guard ───────────────────────────────────────────
+      if (isLoggedIn) {
+        final isEmailVerified = authState.valueOrNull?.emailConfirmedAt != null;
+        if (!isEmailVerified) {
+          if (location != AppRoutes.emailVerification) {
+            debugPrint(
+                '[ROUTER] Redirecting: Logged in user needs email verification');
+            return AppRoutes.emailVerification;
+          }
+          return null;
+        }
+      }
+
       // ── Guest Guard ───────────────────────────────────────────────────────
       if (!isLoggedIn) {
         // Guests ARE allowed on Registration routes and Login routes.
@@ -108,9 +225,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 1. User has no role (First-time social or trigger lag) -> Force Role Selection
+      // If user has a valid completed role, clear the local pending role preference if it exists
+      if (user != null && user.role != UserRole.pending) {
+        final pendingRole = ref.read(pendingRegistrationRoleProvider);
+        if (pendingRole != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(storageServiceProvider).clearPendingRegistrationRole();
+            ref.invalidate(pendingRegistrationRoleProvider);
+          });
+        }
+      }
+
+      // 1. User has no role (First-time social or trigger lag) -> Force Role Selection or direct to pending form
       if (user?.role == UserRole.pending || user == null) {
         if (!_isRegistrationRoute(location)) {
+          final pendingRole = ref.read(pendingRegistrationRoleProvider);
+          if (pendingRole == 'customer') {
+            debugPrint(
+                '[ROUTER] Redirecting directly to Rider Signup based on local preference');
+            return AppRoutes.riderSignUp;
+          } else if (pendingRole == 'owner') {
+            debugPrint(
+                '[ROUTER] Redirecting directly to Owner Signup based on local preference');
+            return AppRoutes.ownerSignUp;
+          }
+
           debugPrint(
               '[ROUTER] Redirecting: Authenticated user needs to pick a role');
           return AppRoutes.roleSelection;
@@ -178,6 +317,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: AppRoutes.loading, builder: (_, __) => const LoadingScreen()),
       GoRoute(
+          path: AppRoutes.emailVerification,
+          builder: (_, __) => const EmailVerificationScreen()),
+      GoRoute(path: '/', builder: (_, __) => const LoadingScreen()),
+      GoRoute(
+          path: '/login-callback', builder: (_, __) => const SizedBox.shrink()),
+      GoRoute(
         path: AppRoutes.admin,
         builder: (_, __) => const CommonPlaceholderScreen(
           title: 'Business Dashboard',
@@ -230,7 +375,7 @@ class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
         debugPrint('[AUTH] Auth State Changed: ${data.event.name}');
         if (data.event == AuthChangeEvent.passwordRecovery) {
           debugPrint('[AUTH] Password recovery event detected! Redirecting...');
-          ref.read(routerProvider).push(AppRoutes.updatePassword);
+          ref.read(routerProvider).go(AppRoutes.updatePassword);
         }
       });
     } catch (e) {
@@ -253,6 +398,7 @@ class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
     );
 
     return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Bike Buddy',
       debugShowCheckedModeBanner: false,
       theme: theme,

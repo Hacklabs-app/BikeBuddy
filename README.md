@@ -36,20 +36,26 @@ fvm flutter pub get
 
 ### 4. Set Up Local Environment Variables
 
-Supabase credentials are injected at build time and are never committed to the repo. Create a `.env.json` file in the project root (it is gitignored):
+Supabase credentials are injected at build time and are never committed to the repo. Create separate `env.dev.json` (for development) and `env.prod.json` (for production, optional/local debug) files in the project root (they are gitignored):
 
+**env.dev.json / env.prod.json:**
 ```json
 {
   "SUPABASE_URL": "your_supabase_url",
-  "SUPABASE_ANON_KEY": "your_anon_key"
+  "SUPABASE_ANON_KEY": "your_anon_key",
+  "GOOGLE_WEB_CLIENT_ID": "your_google_web_client_id"
 }
 ```
 
 Get these values from your Supabase project dashboard under **Project Settings → API**.
 
-Then run the app with:
+Then run the app in your desired environment with:
 ```bash
-fvm flutter run --dart-define-from-file=.env.json
+# Development Mode
+fvm flutter run --dart-define-from-file=env.dev.json
+
+# Production Mode (Local Debug)
+fvm flutter run --dart-define-from-file=env.prod.json
 ```
 
 ### 5. Configure Your IDE

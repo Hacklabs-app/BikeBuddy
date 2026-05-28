@@ -22,19 +22,30 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp({
+  Future<AuthResponse> signUp({
     required String email,
     required String password,
     required String fullName,
   }) async {
     debugPrint('[API REQUEST] Method: signUp, Email: $email, Name: $fullName');
     try {
-      await _client.auth.signUp(
+      final res = await _client.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': fullName},
+        emailRedirectTo: 'bikebuddy://login-callback',
       );
+
+      final identities = res.user?.identities;
+      if (res.user != null && identities != null && identities.isEmpty) {
+        throw const AuthException(
+          'An account with this email already exists. Please log in instead.',
+          statusCode: '400',
+        );
+      }
+
       debugPrint('[API RESPONSE] Method: signUp, Status: SUCCESS');
+      return res;
     } catch (e) {
       debugPrint('[API RESPONSE] Method: signUp, Status: FAILED, Error: $e');
       rethrow;
@@ -141,7 +152,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _client.auth.resetPasswordForEmail(
         email,
-        redirectTo: 'https://hacklabs.app/bikebuddy/callback',
+        redirectTo: 'bikebuddy://login-callback',
       );
       debugPrint('[API RESPONSE] Method: sendPasswordReset, Status: SUCCESS');
     } catch (e) {

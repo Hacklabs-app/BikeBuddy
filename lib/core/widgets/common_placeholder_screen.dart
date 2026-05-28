@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'floating_bottom_nav.dart';
 import '../../features/auth/presentation/state/auth_state.dart';
+import '../../app/app.dart';
 
 class CommonPlaceholderScreen extends ConsumerWidget {
   const CommonPlaceholderScreen({
@@ -63,8 +64,11 @@ class CommonPlaceholderScreen extends ConsumerWidget {
                   SizedBox(
                     width: 200,
                     child: OutlinedButton(
-                      onPressed: () =>
-                          ref.read(authNotifierProvider.notifier).signOut(),
+                      onPressed: () async {
+                        // Simply sign out. GoRouter's redirect logic automatically triggers
+                        // and bounces unauthenticated users off this screen smoothly.
+                        await ref.read(authNotifierProvider.notifier).signOut();
+                      },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
                             color: Colors.redAccent, width: 0.5),
@@ -92,7 +96,13 @@ class CommonPlaceholderScreen extends ConsumerWidget {
               top: 60,
               left: 24,
               child: IconButton(
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                },
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: Colors.white,

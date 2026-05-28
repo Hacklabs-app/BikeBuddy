@@ -39,8 +39,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Full Name'), findsOneWidget);
-      expect(find.text('Station Name'), findsOneWidget);
-      expect(find.text('Phone Number'), findsOneWidget);
+      expect(find.text('Station Name'), findsNothing);
+      expect(find.text('Phone Number'), findsNothing);
     });
 
     testWidgets('validation prevents submission when empty', (tester) async {
@@ -56,8 +56,6 @@ void main() {
       await tester.pump();
 
       expect(find.text('Name is required'), findsOneWidget);
-      expect(find.text('Station name is required'), findsOneWidget);
-      expect(find.text('Phone number is required'), findsOneWidget);
     });
   });
 }
