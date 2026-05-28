@@ -33,6 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         data: {'full_name': fullName},
+        emailRedirectTo: 'bikebuddy://login-callback',
       );
       debugPrint('[API RESPONSE] Method: signUp, Status: SUCCESS');
     } catch (e) {

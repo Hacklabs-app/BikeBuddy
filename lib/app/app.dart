@@ -123,9 +123,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 1. User has no role (First-time social or trigger lag) -> Force Role Selection
+      // If user has a valid completed role, clear the local pending role preference if it exists
+      if (user != null && user.role != UserRole.pending) {
+        final pendingRole = ref.read(pendingRegistrationRoleProvider);
+        if (pendingRole != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(storageServiceProvider).clearPendingRegistrationRole();
+            ref.invalidate(pendingRegistrationRoleProvider);
+          });
+        }
+      }
+
+      // 1. User has no role (First-time social or trigger lag) -> Force Role Selection or direct to pending form
       if (user?.role == UserRole.pending || user == null) {
         if (!_isRegistrationRoute(location)) {
+          final pendingRole = ref.read(pendingRegistrationRoleProvider);
+          if (pendingRole == 'customer') {
+            debugPrint('[ROUTER] Redirecting directly to Rider Signup based on local preference');
+            return AppRoutes.riderSignUp;
+          } else if (pendingRole == 'owner') {
+            debugPrint('[ROUTER] Redirecting directly to Owner Signup based on local preference');
+            return AppRoutes.ownerSignUp;
+          }
+
           debugPrint(
               '[ROUTER] Redirecting: Authenticated user needs to pick a role');
           return AppRoutes.roleSelection;

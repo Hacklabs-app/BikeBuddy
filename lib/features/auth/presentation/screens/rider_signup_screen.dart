@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/services/storage_service.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
 
@@ -63,14 +64,24 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
             );
 
         if (created) {
-          // 2. Profile is auto-created by DB trigger, now update the ID number
-          // (The router will stay here because id_number is still empty in the fresh row)
-          success = await ref
-              .read(authNotifierProvider.notifier)
-              .completeRiderRegistration(
-                idNumber: _idController.text.trim(),
-                phoneNumber: normalizedPhone,
-              );
+          // Check if user is logged in (i.e. email confirmation is disabled)
+          final currentAuthState = ref.read(authStateProvider).valueOrNull;
+          if (currentAuthState != null) {
+            // 2. Profile is auto-created by DB trigger, now update the ID number
+            success = await ref
+                .read(authNotifierProvider.notifier)
+                .completeRiderRegistration(
+                  idNumber: _idController.text.trim(),
+                  phoneNumber: normalizedPhone,
+                );
+          } else {
+            // Email verification is required, so user is not logged in yet.
+            await ref.read(storageServiceProvider).setPendingRegistrationRole('customer');
+            if (mounted) {
+              context.go('/email-verification');
+              return;
+            }
+          }
         }
       }
 
@@ -158,38 +169,39 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   ),
                   const SizedBox(height: 24),
                 ],
-                AuthTextField(
-                  label: 'ID / Admission Number',
-                  hint: 'Registration number',
-                  controller: _idController,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'ID / Admission number is required';
-                    }
-                    if (!Formatters.isValidIdOrAdmission(val)) {
-                      return 'Enter a valid ID (7-9 digits) or Admission number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                AuthTextField(
-                  label: 'Phone (Optional)',
-                  hint: '+254...',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: !isGoogleUser
-                      ? TextInputAction.next
-                      : TextInputAction.done,
-                  validator: (val) {
-                    if (val != null && val.isNotEmpty && !Formatters.isValidPhoneNumber(val)) {
-                      return 'Enter a valid phone number (e.g. 0701234567)';
-                    }
-                    return null;
-                  },
-                ),
+                if (isGoogleUser) ...[
+                  AuthTextField(
+                    label: 'ID / Admission Number',
+                    hint: 'Registration number',
+                    controller: _idController,
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.next,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'ID / Admission number is required';
+                      }
+                      if (!Formatters.isValidIdOrAdmission(val)) {
+                        return 'Enter a valid ID (7-9 digits) or Admission number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  AuthTextField(
+                    label: 'Phone (Optional)',
+                    hint: '+254...',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    validator: (val) {
+                      if (val != null && val.isNotEmpty && !Formatters.isValidPhoneNumber(val)) {
+                        return 'Enter a valid phone number (e.g. 0701234567)';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
                   AuthTextField(

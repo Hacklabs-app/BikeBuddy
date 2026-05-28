@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/services/storage_service.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
 
@@ -65,12 +66,23 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
             );
 
         if (created) {
-          success = await ref
-              .read(authNotifierProvider.notifier)
-              .completeOwnerRegistration(
-                stationName: stationName,
-                phoneNumber: normalizedPhone,
-              );
+          // Check if user is logged in (i.e. email confirmation is disabled)
+          final currentAuthState = ref.read(authStateProvider).valueOrNull;
+          if (currentAuthState != null) {
+            success = await ref
+                .read(authNotifierProvider.notifier)
+                .completeOwnerRegistration(
+                  stationName: stationName,
+                  phoneNumber: normalizedPhone,
+                );
+          } else {
+            // Email verification is required, so user is not logged in yet.
+            await ref.read(storageServiceProvider).setPendingRegistrationRole('owner');
+            if (mounted) {
+              context.go('/email-verification');
+              return;
+            }
+          }
         }
       }
 
@@ -155,35 +167,36 @@ class _OwnerSignUpScreenState extends ConsumerState<OwnerSignUpScreen> {
                   ),
                   const SizedBox(height: 24),
                 ],
-                AuthTextField(
-                  label: 'Station Name',
-                  hint: 'e.g. Central Park Bikes',
-                  controller: _stationController,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) => (val == null || val.isEmpty)
-                      ? 'Station name is required'
-                      : null,
-                ),
-                const SizedBox(height: 24),
-                AuthTextField(
-                  label: 'Phone Number',
-                  hint: '+254...',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: !isGoogleUser
-                      ? TextInputAction.next
-                      : TextInputAction.done,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Phone number is required';
-                    }
-                    if (!Formatters.isValidPhoneNumber(val)) {
-                      return 'Enter a valid phone number (e.g. 0701234567)';
-                    }
-                    return null;
-                  },
-                ),
+                if (isGoogleUser) ...[
+                  AuthTextField(
+                    label: 'Station Name',
+                    hint: 'e.g. Central Park Bikes',
+                    controller: _stationController,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    validator: (val) => (val == null || val.isEmpty)
+                        ? 'Station name is required'
+                        : null,
+                  ),
+                  const SizedBox(height: 24),
+                  AuthTextField(
+                    label: 'Phone Number',
+                    hint: '+254...',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Phone number is required';
+                      }
+                      if (!Formatters.isValidPhoneNumber(val)) {
+                        return 'Enter a valid phone number (e.g. 0701234567)';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
                   AuthTextField(

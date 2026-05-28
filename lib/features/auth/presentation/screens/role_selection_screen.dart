@@ -54,12 +54,12 @@ class RoleSelectionScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
               Text(
                 'Join the ride',
                 style: GoogleFonts.inter(
@@ -77,7 +77,7 @@ class RoleSelectionScreen extends ConsumerWidget {
                   color: Colors.white60,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 40),
 
               // RIDER CARD
               _RoleCard(
