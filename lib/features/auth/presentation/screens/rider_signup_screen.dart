@@ -8,6 +8,7 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/services/storage_service.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RiderSignUpScreen extends ConsumerStatefulWidget {
   const RiderSignUpScreen({super.key});
@@ -25,6 +26,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _acceptedTerms = false;
 
   @override
   void dispose() {
@@ -240,6 +242,85 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                         return 'Passwords do not match';
                       }
                       return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  FormField<bool>(
+                    initialValue: _acceptedTerms,
+                    validator: (value) {
+                      if (value != true) {
+                        return 'You must accept the terms and conditions to proceed';
+                      }
+                      return null;
+                    },
+                    builder: (state) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: state.value ?? false,
+                                  onChanged: (val) {
+                                    state.didChange(val);
+                                    setState(() {
+                                      _acceptedTerms = val ?? false;
+                                    });
+                                  },
+                                  activeColor: AppColors.green,
+                                  checkColor: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final url = Uri.parse('https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                    }
+                                  },
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: Colors.white70,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'I accept the '),
+                                        TextSpan(
+                                          text: 'Terms and Conditions',
+                                          style: GoogleFonts.inter(
+                                            color: AppColors.green,
+                                            fontWeight: FontWeight.bold,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (state.hasError) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 36),
+                              child: Text(
+                                state.errorText ?? '',
+                                style: GoogleFonts.inter(
+                                  color: Colors.redAccent,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
                     },
                   ),
                 ],

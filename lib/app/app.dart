@@ -70,6 +70,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.matchedLocation;
 
+      // Allow password update and forgot-password screens to pass through without redirection
+      if (location == AppRoutes.updatePassword || location == AppRoutes.forgotPassword) {
+        return null;
+      }
+
       final authState = ref.read(authStateProvider);
       final userAsync = ref.read(currentUserProvider);
       final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
@@ -267,7 +272,7 @@ class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
         debugPrint('[AUTH] Auth State Changed: ${data.event.name}');
         if (data.event == AuthChangeEvent.passwordRecovery) {
           debugPrint('[AUTH] Password recovery event detected! Redirecting...');
-          ref.read(routerProvider).push(AppRoutes.updatePassword);
+          ref.read(routerProvider).go(AppRoutes.updatePassword);
         }
       });
     } catch (e) {

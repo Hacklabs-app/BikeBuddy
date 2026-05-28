@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
@@ -24,28 +23,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   void dispose() {
     _emailController.dispose();
     super.dispose();
-  }
-
-  Future<void> _openMailApp() async {
-    final Uri emailLaunchUri = Uri(
-      scheme: 'mailto',
-    );
-    try {
-      if (await canLaunchUrl(emailLaunchUri)) {
-        await launchUrl(emailLaunchUri);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not open default email app. Please open it manually.'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('[MAIL] Error launching mail client: $e');
-    }
   }
 
   Future<void> _handleReset() async {
@@ -196,40 +173,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         SizedBox(
           width: double.infinity,
           height: 56,
-          child: FilledButton.icon(
-            onPressed: _openMailApp,
-            icon: const Icon(Icons.mark_email_unread_outlined, size: 20, color: Colors.black),
-            label: Text(
-              'Open Email App',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
-              ),
-            ),
+          child: FilledButton(
+            onPressed: () => context.pop(),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: OutlinedButton(
-            onPressed: () => context.pop(),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.white10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
+            child: Text(
               'Back to Login',
-              style: TextStyle(color: Colors.white),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
             ),
           ),
         ),

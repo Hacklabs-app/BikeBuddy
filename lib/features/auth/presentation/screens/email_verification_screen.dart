@@ -18,7 +18,6 @@ class EmailVerificationScreen extends ConsumerStatefulWidget {
 
 class _EmailVerificationScreenState
     extends ConsumerState<EmailVerificationScreen> {
-  bool _isRefreshing = false;
   bool _isResending = false;
   int _resendCooldown = 0;
   Timer? _cooldownTimer;
@@ -50,43 +49,7 @@ class _EmailVerificationScreenState
     });
   }
 
-  Future<void> _checkStatus() async {
-    if (_isRefreshing) return;
-    setState(() {
-      _isRefreshing = true;
-      _message = null;
-      _errorMessage = null;
-    });
 
-    try {
-      debugPrint('[AUTH] Manually refreshing Supabase session...');
-      final response = await Supabase.instance.client.auth.refreshSession();
-      final user = response.user;
-
-      if (user != null && user.emailConfirmedAt != null) {
-        debugPrint('[AUTH] Email verified successfully! Triggering redirect...');
-        _refreshesProviders();
-        if (mounted) {
-          context.go('/home');
-        }
-      } else {
-        setState(() {
-          _errorMessage = "Email not verified yet. Please check your inbox and click the verification link.";
-        });
-      }
-    } catch (e) {
-      debugPrint('[AUTH] Failed to refresh session: $e');
-      setState(() {
-        _errorMessage = "Connection error. Please try again.";
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isRefreshing = false;
-        });
-      }
-    }
-  }
 
   Future<void> _resendEmail(String email) async {
     if (_isResending || _resendCooldown > 0) return;
@@ -237,54 +200,11 @@ class _EmailVerificationScreenState
                       child: Column(
                         children: [
                           Text(
-                            'We sent an activation link to your email:',
+                            'We sent an activation link to your email. Please click the button inside that email to automatically secure your profile and gain access.',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: Colors.white60,
-                              height: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Highlighted Email Chip
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: AppColors.green.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: AppColors.green.withValues(alpha: 0.12),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.alternate_email_rounded, color: AppColors.green, size: 16),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    email,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.spaceMono(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.green,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          Text(
-                            'Please click the button inside that email to automatically secure your profile and gain access.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: Colors.white38,
+                              color: Colors.white70,
                               height: 1.5,
                             ),
                           ),
@@ -350,22 +270,25 @@ class _EmailVerificationScreenState
                         ),
                       ),
 
-                    // Action: Check Status Button
+                    // Primary Action: Resend Code with Cool-down
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isRefreshing ? null : _checkStatus,
+                        onPressed: (_isResending || _resendCooldown > 0)
+                            ? null
+                            : () => _resendEmail(email),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.green,
                           foregroundColor: Colors.black,
                           disabledBackgroundColor: AppColors.green.withValues(alpha: 0.3),
+                          disabledForegroundColor: Colors.black38,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 0,
                         ),
-                        child: _isRefreshing
+                        child: _isResending
                           ? const SizedBox(
                               width: 24,
                               height: 24,
@@ -375,95 +298,14 @@ class _EmailVerificationScreenState
                               ),
                             )
                           : Text(
-                              'I Have Verified My Email',
+                              _resendCooldown > 0
+                                  ? 'Resend email in ${_resendCooldown}s'
+                                  : 'Resend Verification Email',
                               style: GoogleFonts.inter(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Secondary Action: Resend Code with Cool-down
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: OutlinedButton(
-                        onPressed: (_isResending || _resendCooldown > 0)
-                            ? null
-                            : () => _resendEmail(email),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          disabledForegroundColor: Colors.white24,
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            width: 1,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: _isResending
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white38),
-                              ),
-                            )
-                          : Text(
-                              _resendCooldown > 0
-                                  ? 'Resend email in ${_resendCooldown}s'
-                                  : 'Resend Verification Email',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Premium helper details on redirection
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.01),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.help_outline_rounded, color: Colors.white30, size: 18),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Trouble authenticating?',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '1. Ensure you open the verification link directly on this device.\n2. If it opens a web page instead of this app, check your redirect URL settings in Supabase.',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.white30,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                     const SizedBox(height: 28),

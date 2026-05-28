@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'floating_bottom_nav.dart';
 import '../../features/auth/presentation/state/auth_state.dart';
+import '../../app/app.dart';
 
 class CommonPlaceholderScreen extends ConsumerWidget {
   const CommonPlaceholderScreen({
@@ -63,8 +64,14 @@ class CommonPlaceholderScreen extends ConsumerWidget {
                   SizedBox(
                     width: 200,
                     child: OutlinedButton(
-                      onPressed: () =>
-                          ref.read(authNotifierProvider.notifier).signOut(),
+                      onPressed: () async {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go(AppRoutes.home);
+                        }
+                        await ref.read(authNotifierProvider.notifier).signOut();
+                      },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
                             color: Colors.redAccent, width: 0.5),
