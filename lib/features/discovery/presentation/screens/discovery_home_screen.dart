@@ -105,9 +105,9 @@ class _DiscoveryHomeScreenState extends ConsumerState<DiscoveryHomeScreen>
                             _ProfileIcon(
                               onTap: () {
                                 if (isLoggedIn) {
-                                  context.push('/profile');
+                                  context.go('/profile');
                                 } else {
-                                  context.push('/login');
+                                  context.go('/login');
                                 }
                               },
                             ),

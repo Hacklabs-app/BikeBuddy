@@ -51,6 +51,44 @@ bool _isOwnerRoute(String loc) => _ownerRoutes.contains(loc);
 bool _isCustomerAuthRoute(String loc) => _customerAuthRoutes.contains(loc);
 bool _isRegistrationRoute(String loc) => _registrationRoutes.contains(loc);
 
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+void _showRouterSnackBar(String message, {bool isError = false}) {
+  scaffoldMessengerKey.currentState?.clearSnackBars();
+  scaffoldMessengerKey.currentState?.showSnackBar(
+    SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+            color: isError ? Colors.redAccent : const Color(0xFF00B248),
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFF1E1E24),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      duration: const Duration(seconds: 4),
+    ),
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ValueNotifier<bool>(false);
 
@@ -69,6 +107,40 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final location = state.matchedLocation;
+
+      // Intercept and handle /login-callback deep link errors gracefully without showing "Page Not Found"
+      if (location.startsWith('/login-callback')) {
+        final uri = state.uri;
+        final params = {...uri.queryParameters};
+
+        // Support fragment parsing since some auth servers return parameters in fragment after '#'
+        if (uri.fragment.isNotEmpty) {
+          try {
+            final fragmentUri = Uri.parse('?${uri.fragment}');
+            params.addAll(fragmentUri.queryParameters);
+          } catch (_) {}
+        }
+
+        final error = params['error'];
+        final errorCode = params['error_code'];
+        final errorDescription = params['error_description'];
+
+        if (error != null || errorCode != null) {
+          debugPrint('[ROUTER] Deep-link error callback: $error ($errorCode): $errorDescription');
+
+          String displayMessage = errorDescription?.replaceAll('+', ' ') ?? 'Verification link error.';
+          if (errorCode == 'otp_expired' || error == 'access_denied' || displayMessage.toLowerCase().contains('expired') || displayMessage.toLowerCase().contains('invalid')) {
+            displayMessage = 'The verification link has expired or already been used. Please request a new link.';
+          }
+
+          final msg = displayMessage;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showRouterSnackBar(msg, isError: true);
+          });
+        }
+
+        return AppRoutes.home;
+      }
 
       // Allow password update and forgot-password screens to pass through without redirection
       if (location == AppRoutes.updatePassword || location == AppRoutes.forgotPassword) {
@@ -220,6 +292,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: AppRoutes.emailVerification, builder: (_, __) => const EmailVerificationScreen()),
       GoRoute(
+          path: '/login-callback', builder: (_, __) => const SizedBox.shrink()),
+      GoRoute(
         path: AppRoutes.admin,
         builder: (_, __) => const CommonPlaceholderScreen(
           title: 'Business Dashboard',
@@ -295,6 +369,7 @@ class _BikeBuddyAppState extends ConsumerState<BikeBuddyApp> {
     );
 
     return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Bike Buddy',
       debugShowCheckedModeBanner: false,
       theme: theme,

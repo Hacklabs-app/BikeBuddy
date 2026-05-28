@@ -65,11 +65,8 @@ class CommonPlaceholderScreen extends ConsumerWidget {
                     width: 200,
                     child: OutlinedButton(
                       onPressed: () async {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go(AppRoutes.home);
-                        }
+                        // Simply sign out. GoRouter's redirect logic automatically triggers
+                        // and bounces unauthenticated users off this screen smoothly.
                         await ref.read(authNotifierProvider.notifier).signOut();
                       },
                       style: OutlinedButton.styleFrom(
@@ -99,7 +96,13 @@ class CommonPlaceholderScreen extends ConsumerWidget {
               top: 60,
               left: 24,
               child: IconButton(
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                },
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: Colors.white,
