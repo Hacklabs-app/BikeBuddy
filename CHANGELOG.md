@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.3.1...bike_buddy-v1.4.0) (2026-05-30)
+
+
+### Features
+
+* Add shop setup screen, refactor widgets, and enhance testing ([#70](https://github.com/Hacklabs-app/BikeBuddy/issues/70)) ([b7be2cb](https://github.com/Hacklabs-app/BikeBuddy/commit/b7be2cbf86c258a011c75bd975ce7948e759dbc8))
+* Enhance signup and email verification flow with error handling ([#68](https://github.com/Hacklabs-app/BikeBuddy/issues/68)) ([08c521f](https://github.com/Hacklabs-app/BikeBuddy/commit/08c521ff241573426d68412cc50f14d83dbaeaf5))
+
 ## [1.3.1](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.3.0...bike_buddy-v1.3.1) (2026-05-23)
 
 
