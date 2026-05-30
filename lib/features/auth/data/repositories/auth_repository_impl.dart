@@ -147,6 +147,54 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> setupShop({
+    required String name,
+    required String phoneNumber,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String operatingHoursOpen,
+    required String operatingHoursClose,
+    int? totalBikes,
+    int? ratePerHour,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw 'User not authenticated';
+
+    debugPrint(
+        '[API REQUEST] Method: setupShop, User: ${user.id}, Shop: $name, Phone: $phoneNumber');
+    try {
+      final shopRes = await _client
+          .from('shops')
+          .upsert({
+            'owner_id': user.id,
+            'name': name,
+            'phone_number': phoneNumber,
+            'address': address,
+            'latitude': latitude,
+            'longitude': longitude,
+            'operating_hours_open': operatingHoursOpen,
+            'operating_hours_close': operatingHoursClose,
+            if (totalBikes != null) 'total_bikes': totalBikes,
+          }, onConflict: 'owner_id')
+          .select('id')
+          .maybeSingle();
+
+      if (shopRes != null && ratePerHour != null) {
+        final shopId = shopRes['id'];
+        await _client.from('shop_rates').upsert({
+          'shop_id': shopId,
+          'rate_per_hour': ratePerHour,
+        }, onConflict: 'shop_id');
+      }
+      debugPrint('[API RESPONSE] Method: setupShop, Status: SUCCESS');
+    } catch (e) {
+      debugPrint('[API RESPONSE] Method: setupShop, Status: FAILED, Error: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> sendPasswordReset(String email) async {
     debugPrint('[API REQUEST] Method: sendPasswordReset, Email: $email');
     try {

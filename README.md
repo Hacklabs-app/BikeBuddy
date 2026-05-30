@@ -79,6 +79,42 @@ To ensure your IDE uses the correct Flutter version, you **must** manually confi
 
 ---
 
+## 🧪 Testing
+
+We support Unit, Widget, and End-to-End (E2E) Integration tests.
+
+### Running Unit & Widget Tests
+```bash
+fvm flutter test
+```
+
+### Running E2E UI Integration Tests
+To run live UI tests against the actual Supabase development database:
+```bash
+fvm flutter test integration_test/real_login_test.dart -d <device_id> --dart-define-from-file=env.dev.json
+```
+*(Replace `<device_id>` with your active device/emulator ID, found using `fvm flutter devices`)*
+
+#### Testing Sandbox Credentials
+For manual and automated UI testing, use the following sandbox accounts:
+* **Station Owner**:
+  * **Email**: `owner@bikebuddy.com`
+  * **Password**: `Owner@123`
+* **Rider**:
+  * **Email**: `rider@bikebuddy.com`
+  * **Password**: `Rider@123`
+
+---
+
+## 📐 Code Quality & Maintainability Guidelines
+
+To keep the codebase modular, clean, and highly maintainable:
+* **Strict File Length Limit**: All page and presentation files must remain **under 300 to 400 lines maximum**.
+* **Widget Extraction**: Avoid giant widget trees. Extract distinct segments (e.g., local form panels, skeleton loaders, custom operation pickers) into modular components inside a `/widgets` subdirectory.
+* **Modern State Management**: Maintain Riverpod-driven updates to avoid full-page refreshes, ensuring instantaneous and clean UI/UX reactivity.
+
+---
+
 ## 🛠 How to Contribute
 
 ### The Workflow:

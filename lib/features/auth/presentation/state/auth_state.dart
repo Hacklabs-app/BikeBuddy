@@ -162,6 +162,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> setupShop({
+    required String name,
+    required String phoneNumber,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String operatingHoursOpen,
+    required String operatingHoursClose,
+    int? totalBikes,
+    int? ratePerHour,
+  }) async {
+    debugPrint('[AUTH] Setting up shop: $name');
+    state = state.copyWith(isEmailLoading: true, error: null);
+    try {
+      await _repository.setupShop(
+        name: name,
+        phoneNumber: phoneNumber,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        operatingHoursOpen: operatingHoursOpen,
+        operatingHoursClose: operatingHoursClose,
+        totalBikes: totalBikes,
+        ratePerHour: ratePerHour,
+      );
+
+      debugPrint('[AUTH] Invalidating profile cache to reflect shop setup...');
+      _ref.invalidate(currentUserProvider);
+
+      debugPrint('[AUTH] Shop setup completed successfully.');
+      if (!mounted) return true;
+      state = state.copyWith(isEmailLoading: false);
+      return true;
+    } catch (e) {
+      debugPrint('[AUTH] Shop setup failed: $e');
+      if (!mounted) return false;
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not complete shop onboarding.');
+      return false;
+    }
+  }
+
   Future<bool> sendPasswordReset(String email) async {
     debugPrint('[AUTH] Sending password reset link to: $email');
     state = state.copyWith(isEmailLoading: true, error: null);

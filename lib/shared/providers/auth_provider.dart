@@ -16,33 +16,44 @@ final authStateProvider = StreamProvider<User?>((ref) async* {
 
 // Fetches the full app profile (role, shopId, etc.) for the signed-in user.
 // Re-runs automatically whenever authStateProvider emits a new value.
-final currentUserProvider = FutureProvider<UserModel?>((ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
-  if (user == null) return null;
+class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
+  @override
+  Future<UserModel?> build() async {
+    final user = ref.watch(authStateProvider).valueOrNull;
+    if (user == null) return null;
 
-  final client = Supabase.instance.client;
+    final client = Supabase.instance.client;
 
-  debugPrint('[API REQUEST] Fetching profile for user: ${user.id}');
-  final data =
-      await client.from('profiles').select().eq('id', user.id).maybeSingle();
+    debugPrint('[API REQUEST] Fetching profile for user: ${user.id}');
+    final data =
+        await client.from('profiles').select().eq('id', user.id).maybeSingle();
 
-  if (data == null) {
-    debugPrint('[API RESPONSE] Profile not found for user: ${user.id}');
-    return null;
+    if (data == null) {
+      debugPrint('[API RESPONSE] Profile not found for user: ${user.id}');
+      return null;
+    }
+
+    debugPrint('[API RESPONSE] Profile fetched successfully: ${data['role']}');
+    String? shopId;
+    if (data['role'] == 'owner') {
+      debugPrint('[API REQUEST] User is owner, fetching shop details...');
+      final shopData = await client
+          .from('shops')
+          .select('id')
+          .eq('owner_id', user.id)
+          .maybeSingle();
+      shopId = shopData?['id'] as String?;
+      debugPrint('[API RESPONSE] Shop ID: $shopId');
+    }
+
+    return UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});
   }
 
-  debugPrint('[API RESPONSE] Profile fetched successfully: ${data['role']}');
-  String? shopId;
-  if (data['role'] == 'owner') {
-    debugPrint('[API REQUEST] User is owner, fetching shop details...');
-    final shopData = await client
-        .from('shops')
-        .select('id')
-        .eq('owner_id', user.id)
-        .maybeSingle();
-    shopId = shopData?['id'] as String?;
-    debugPrint('[API RESPONSE] Shop ID: $shopId');
+  void updateLocalUser(UserModel updated) {
+    state = AsyncValue.data(updated);
   }
+}
 
-  return UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});
-});
+final currentUserProvider =
+    AsyncNotifierProvider<CurrentUserNotifier, UserModel?>(
+        CurrentUserNotifier.new);
