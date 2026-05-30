@@ -123,84 +123,153 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                           final durationStr = _getDurationString(
                               rental.startTime, rental.endTime);
 
-                          return GestureDetector(
-                            onTap: () => _showContactOptionsBottomSheet(context, rental),
-                            child: Container(
+                           return Dismissible(
+                            key: Key('rental_${rental.id}'),
+                            direction: DismissDirection.endToStart,
+                            confirmDismiss: (direction) async {
+                              final result = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    backgroundColor: AppColors.surfaceDark,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: Text(
+                                      'Delete Activity Log?',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      'Are you sure you want to permanently delete the rental record for ${rental.customerName}? This action cannot be undone.',
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.redAccent,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              return result ?? false;
+                            },
+                            onDismissed: (direction) {
+                              ref.read(manualRentalsProvider.notifier).deleteRental(rental.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Rental record deleted.',
+                                    style: GoogleFonts.inter(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
                               margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceDark,
+                                color: Colors.redAccent.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.03)),
+                                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          rental.customerName,
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: Colors.white,
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.redAccent,
+                                size: 24,
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onTap: () => _showContactOptionsBottomSheet(context, rental),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceDark,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.03)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            rental.customerName,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${rental.bikeLabel} · $durationStr',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: AppColors.textMuted,
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${rental.bikeLabel} · $durationStr',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              color: AppColors.textMuted,
+                                            ),
                                           ),
-                                        ),
-                                        if (rental.nationalId.isNotEmpty) ...[
+                                          if (rental.nationalId.isNotEmpty) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'ID/Adm: ${rental.nationalId} · ${rental.customerPhone}',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11,
+                                                color: Colors.white30,
+                                              ),
+                                            ),
+                                          ],
                                           const SizedBox(height: 2),
                                           Text(
-                                            'ID/Adm: ${rental.nationalId} · ${rental.customerPhone}',
+                                            formattedTime,
                                             style: GoogleFonts.inter(
-                                              fontSize: 11,
+                                              fontSize: 10,
                                               color: Colors.white30,
                                             ),
                                           ),
                                         ],
-                                        const SizedBox(height: 2),
+                                      ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
                                         Text(
-                                          formattedTime,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 10,
-                                            color: Colors.white30,
+                                          'Ksh ${rental.totalAmount?.toStringAsFixed(2) ?? '0.00'}',
+                                          style: GoogleFonts.outfit(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: AppColors.green,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        GestureDetector(
+                                          onTap: () => _showDeleteConfirmation(context, rental),
+                                          child: const Icon(
+                                            Icons.delete_outline_rounded,
+                                            color: Colors.redAccent,
+                                            size: 16,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'Ksh ${rental.totalAmount?.toStringAsFixed(2) ?? '0.00'}',
-                                        style: GoogleFonts.outfit(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: AppColors.green,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      GestureDetector(
-                                        onTap: () => _showDeleteConfirmation(context, rental),
-                                        child: const Icon(
-                                          Icons.delete_outline_rounded,
-                                          color: Colors.redAccent,
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           );

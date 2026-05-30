@@ -705,7 +705,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ),
                 ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => ManualRentalBottomSheet.show(context),
+            onPressed: () => ManualRentalBottomSheet.show(
+              context,
+              onQuickLease: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Launch Bike QR scanner to initiate checkout...',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                    backgroundColor: AppColors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
             backgroundColor: AppColors.green,
             icon: const Icon(Icons.add, color: Colors.black),
             label: Text(

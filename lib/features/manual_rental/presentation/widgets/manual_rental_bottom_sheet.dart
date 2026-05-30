@@ -83,7 +83,6 @@ class _ManualRentalBottomSheetState extends ConsumerState<ManualRentalBottomShee
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
@@ -104,43 +103,25 @@ class _ManualRentalBottomSheetState extends ConsumerState<ManualRentalBottomShee
                             );
                           }
                         },
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.green.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
+                            shape: BoxShape.circle,
                             border: Border.all(color: AppColors.green.withValues(alpha: 0.35)),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.qr_code_scanner_rounded, color: AppColors.green, size: 14),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Quick Lease',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.green,
-                                ),
-                              ),
-                            ],
+                          child: const Icon(
+                            Icons.qr_code_scanner_rounded,
+                            color: AppColors.green,
+                            size: 26,
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Direct manual rental registration. Starts counting duration immediately.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
