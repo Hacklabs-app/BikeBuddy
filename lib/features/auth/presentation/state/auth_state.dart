@@ -62,7 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> signUp({
+  Future<AuthResponse?> signUp({
     required String email,
     required String password,
     required String fullName,
@@ -70,23 +70,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     debugPrint('[AUTH] Attempting sign up for: $email');
     state = state.copyWith(isEmailLoading: true, error: null);
     try {
-      await _repository.signUp(
+      final res = await _repository.signUp(
           email: email, password: password, fullName: fullName);
       debugPrint('[AUTH] Sign up successful!');
-      if (!mounted) return true;
+      if (!mounted) return res;
       state = state.copyWith(isEmailLoading: false);
-      return true;
+      return res;
     } on AuthException catch (e) {
       debugPrint('[AUTH] Sign up failed (AuthException): ${e.message}');
-      if (!mounted) return false;
+      if (!mounted) return null;
       state = state.copyWith(isEmailLoading: false, error: e.message);
-      return false;
+      return null;
     } catch (e) {
       debugPrint('[AUTH] Sign up failed (Unknown): $e');
-      if (!mounted) return false;
+      if (!mounted) return null;
       state =
           state.copyWith(isEmailLoading: false, error: 'Registration failed.');
-      return false;
+      return null;
     }
   }
 
@@ -158,6 +158,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (!mounted) return false;
       state = state.copyWith(
           isEmailLoading: false, error: 'Could not save station details.');
+      return false;
+    }
+  }
+
+  Future<bool> setupShop({
+    required String name,
+    required String phoneNumber,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String operatingHoursOpen,
+    required String operatingHoursClose,
+    int? totalBikes,
+    int? ratePerHour,
+  }) async {
+    debugPrint('[AUTH] Setting up shop: $name');
+    state = state.copyWith(isEmailLoading: true, error: null);
+    try {
+      await _repository.setupShop(
+        name: name,
+        phoneNumber: phoneNumber,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        operatingHoursOpen: operatingHoursOpen,
+        operatingHoursClose: operatingHoursClose,
+        totalBikes: totalBikes,
+        ratePerHour: ratePerHour,
+      );
+
+      debugPrint('[AUTH] Invalidating profile cache to reflect shop setup...');
+      _ref.invalidate(currentUserProvider);
+
+      debugPrint('[AUTH] Shop setup completed successfully.');
+      if (!mounted) return true;
+      state = state.copyWith(isEmailLoading: false);
+      return true;
+    } catch (e) {
+      debugPrint('[AUTH] Shop setup failed: $e');
+      if (!mounted) return false;
+      state = state.copyWith(
+          isEmailLoading: false, error: 'Could not complete shop onboarding.');
       return false;
     }
   }

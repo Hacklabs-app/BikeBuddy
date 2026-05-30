@@ -169,21 +169,25 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
           height: 56,
-          child: OutlinedButton(
+          child: FilledButton(
             onPressed: () => context.pop(),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.white10),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Back to Login',
-              style: TextStyle(color: Colors.white),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
             ),
           ),
         ),

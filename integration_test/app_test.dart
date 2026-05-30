@@ -106,12 +106,13 @@ void main() {
           overrides: [
             authStateProvider
                 .overrideWith((ref) => Stream.value(mocktailUser())),
-            currentUserProvider.overrideWith((ref) async => const UserModel(
-                  id: 'test-id',
-                  email: 'test@example.com',
-                  fullName: 'Test User',
-                  role: UserRole.pending,
-                )),
+            currentUserProvider
+                .overrideWith(() => MockCurrentUserNotifier(const UserModel(
+                      id: 'test-id',
+                      email: 'test@example.com',
+                      fullName: 'Test User',
+                      role: UserRole.pending,
+                    ))),
           ],
         ),
       );
@@ -136,3 +137,13 @@ sb.User mocktailUser() => sb.User(
       aud: 'aud',
       createdAt: DateTime.now().toIso8601String(),
     );
+
+class MockCurrentUserNotifier extends CurrentUserNotifier {
+  final UserModel _user;
+  MockCurrentUserNotifier(this._user);
+
+  @override
+  Future<UserModel?> build() async {
+    return _user;
+  }
+}

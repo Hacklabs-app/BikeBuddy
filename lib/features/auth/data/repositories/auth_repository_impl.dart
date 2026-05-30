@@ -22,19 +22,30 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp({
+  Future<AuthResponse> signUp({
     required String email,
     required String password,
     required String fullName,
   }) async {
     debugPrint('[API REQUEST] Method: signUp, Email: $email, Name: $fullName');
     try {
-      await _client.auth.signUp(
+      final res = await _client.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': fullName},
+        emailRedirectTo: 'bikebuddy://login-callback',
       );
+
+      final identities = res.user?.identities;
+      if (res.user != null && identities != null && identities.isEmpty) {
+        throw const AuthException(
+          'An account with this email already exists. Please log in instead.',
+          statusCode: '400',
+        );
+      }
+
       debugPrint('[API RESPONSE] Method: signUp, Status: SUCCESS');
+      return res;
     } catch (e) {
       debugPrint('[API RESPONSE] Method: signUp, Status: FAILED, Error: $e');
       rethrow;
@@ -136,12 +147,60 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> setupShop({
+    required String name,
+    required String phoneNumber,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String operatingHoursOpen,
+    required String operatingHoursClose,
+    int? totalBikes,
+    int? ratePerHour,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw 'User not authenticated';
+
+    debugPrint(
+        '[API REQUEST] Method: setupShop, User: ${user.id}, Shop: $name, Phone: $phoneNumber');
+    try {
+      final shopRes = await _client
+          .from('shops')
+          .upsert({
+            'owner_id': user.id,
+            'name': name,
+            'phone_number': phoneNumber,
+            'address': address,
+            'latitude': latitude,
+            'longitude': longitude,
+            'operating_hours_open': operatingHoursOpen,
+            'operating_hours_close': operatingHoursClose,
+            if (totalBikes != null) 'total_bikes': totalBikes,
+          }, onConflict: 'owner_id')
+          .select('id')
+          .maybeSingle();
+
+      if (shopRes != null && ratePerHour != null) {
+        final shopId = shopRes['id'];
+        await _client.from('shop_rates').upsert({
+          'shop_id': shopId,
+          'rate_per_hour': ratePerHour,
+        }, onConflict: 'shop_id');
+      }
+      debugPrint('[API RESPONSE] Method: setupShop, Status: SUCCESS');
+    } catch (e) {
+      debugPrint('[API RESPONSE] Method: setupShop, Status: FAILED, Error: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> sendPasswordReset(String email) async {
     debugPrint('[API REQUEST] Method: sendPasswordReset, Email: $email');
     try {
       await _client.auth.resetPasswordForEmail(
         email,
-        redirectTo: 'https://hacklabs.app/bikebuddy/callback',
+        redirectTo: 'bikebuddy://login-callback',
       );
       debugPrint('[API RESPONSE] Method: sendPasswordReset, Status: SUCCESS');
     } catch (e) {

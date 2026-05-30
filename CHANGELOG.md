@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.3.0...bike_buddy-v1.3.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* update deep link domain from hacklabs.com to hacklabs.app ([#65](https://github.com/Hacklabs-app/BikeBuddy/issues/65)) ([94f2d77](https://github.com/Hacklabs-app/BikeBuddy/commit/94f2d77ea72fe4e75524f07e7682aa73cbfaedca))
+
 ## [1.3.0](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.2.0...bike_buddy-v1.3.0) (2026-05-16)
 
 

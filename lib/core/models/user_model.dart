@@ -46,4 +46,24 @@ class UserModel {
         'id_number': idNumber,
         'phone_number': phoneNumber,
       };
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    UserRole? role,
+    String? shopId,
+    String? idNumber,
+    String? phoneNumber,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      role: role ?? this.role,
+      shopId: shopId ?? this.shopId,
+      idNumber: idNumber ?? this.idNumber,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+    );
+  }
 }

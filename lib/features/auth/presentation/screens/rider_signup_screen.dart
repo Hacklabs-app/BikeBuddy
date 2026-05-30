@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/services/storage_service.dart';
 import '../widgets/auth_text_field.dart';
 import '../state/auth_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RiderSignUpScreen extends ConsumerStatefulWidget {
   const RiderSignUpScreen({super.key});
@@ -23,6 +26,7 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _acceptedTerms = false;
 
   @override
   void dispose() {
@@ -41,6 +45,9 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
       final isLoggedIn = authState != null;
       bool success = false;
 
+      final normalizedPhone =
+          Formatters.normalizePhoneNumber(_phoneController.text);
+
       if (isLoggedIn) {
         // CASE: GOOGLE INTERCEPTOR
         // User already has an account, just saving missing profile data
@@ -48,30 +55,37 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
             .read(authNotifierProvider.notifier)
             .completeRiderRegistration(
               idNumber: _idController.text.trim(),
-              phoneNumber: _phoneController.text.trim().isEmpty
-                  ? null
-                  : _phoneController.text.trim(),
+              phoneNumber: normalizedPhone,
             );
       } else {
-        // CASE: MANUAL SIGN UP
-        // 1. Create the account
-        final created = await ref.read(authNotifierProvider.notifier).signUp(
+        final response = await ref.read(authNotifierProvider.notifier).signUp(
               email: _emailController.text.trim(),
               password: _passwordController.text,
               fullName: _nameController.text.trim(),
             );
 
-        if (created) {
-          // 2. Profile is auto-created by DB trigger, now update the ID number
-          // (The router will stay here because id_number is still empty in the fresh row)
-          success = await ref
-              .read(authNotifierProvider.notifier)
-              .completeRiderRegistration(
-                idNumber: _idController.text.trim(),
-                phoneNumber: _phoneController.text.trim().isEmpty
-                    ? null
-                    : _phoneController.text.trim(),
-              );
+        if (response != null) {
+          final isEmailVerificationRequired = response.session == null;
+          if (!isEmailVerificationRequired) {
+            // 2. Profile is auto-created by DB trigger, now update the ID number
+            success = await ref
+                .read(authNotifierProvider.notifier)
+                .completeRiderRegistration(
+                  idNumber: _idController.text.trim(),
+                  phoneNumber: normalizedPhone,
+                );
+          } else {
+            // Email verification is required, so user is not logged in yet.
+            await ref
+                .read(storageServiceProvider)
+                .setPendingRegistrationRole('customer');
+            ref.read(pendingRegistrationRoleProvider.notifier).state =
+                'customer';
+            if (mounted) {
+              context.go('/email-verification');
+              return;
+            }
+          }
         }
       }
 
@@ -127,6 +141,35 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                     color: Colors.white60,
                   ),
                 ),
+                if (authNotifierState.error != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline_rounded,
+                            color: Colors.redAccent, size: 18),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            authNotifierState.error!,
+                            style: GoogleFonts.inter(
+                              color: Colors.redAccent,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 40),
                 if (!isGoogleUser) ...[
                   AuthTextField(
@@ -159,25 +202,41 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                   ),
                   const SizedBox(height: 24),
                 ],
-                AuthTextField(
-                  label: 'ID / Admission Number',
-                  hint: 'Registration number',
-                  controller: _idController,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? 'ID is required' : null,
-                ),
-                const SizedBox(height: 24),
-                AuthTextField(
-                  label: 'Phone (Optional)',
-                  hint: '+254...',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: !isGoogleUser
-                      ? TextInputAction.next
-                      : TextInputAction.done,
-                ),
+                if (isGoogleUser) ...[
+                  AuthTextField(
+                    label: 'ID / Admission Number',
+                    hint: 'Registration number',
+                    controller: _idController,
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.next,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'ID / Admission number is required';
+                      }
+                      if (!Formatters.isValidIdOrAdmission(val)) {
+                        return 'Enter a valid ID (7-9 digits) or Admission number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  AuthTextField(
+                    label: 'Phone (Optional)',
+                    hint: '+254...',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    validator: (val) {
+                      if (val != null &&
+                          val.isNotEmpty &&
+                          !Formatters.isValidPhoneNumber(val)) {
+                        return 'Enter a valid phone number (e.g. 0701234567)';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 if (!isGoogleUser) ...[
                   const SizedBox(height: 24),
                   AuthTextField(
@@ -218,8 +277,90 @@ class _RiderSignUpScreenState extends ConsumerState<RiderSignUpScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 24),
+                  FormField<bool>(
+                    initialValue: _acceptedTerms,
+                    validator: (value) {
+                      if (value != true) {
+                        return 'You must accept the terms and conditions to proceed';
+                      }
+                      return null;
+                    },
+                    builder: (state) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: state.value ?? false,
+                                  onChanged: (val) {
+                                    state.didChange(val);
+                                    setState(() {
+                                      _acceptedTerms = val ?? false;
+                                    });
+                                  },
+                                  activeColor: AppColors.green,
+                                  checkColor: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final url = Uri.parse(
+                                        'https://www.freeprivacypolicy.com/live/e7a1012e-6a5c-406e-bd69-a6d7fa307f02');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url,
+                                          mode: LaunchMode.externalApplication);
+                                    }
+                                  },
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: Colors.white70,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'I accept the '),
+                                        TextSpan(
+                                          text: 'Terms and Conditions',
+                                          style: GoogleFonts.inter(
+                                            color: AppColors.green,
+                                            fontWeight: FontWeight.bold,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (state.hasError) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 36),
+                              child: Text(
+                                state.errorText ?? '',
+                                style: GoogleFonts.inter(
+                                  color: Colors.redAccent,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
                 ],
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 56,
