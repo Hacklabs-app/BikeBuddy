@@ -17,6 +17,15 @@ private val keystoreProperties = Properties().also { props ->
     }
 }
 
+private val localProperties = Properties().also { props ->
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        FileInputStream(localPropertiesFile).use { input ->
+            props.load(input)
+        }
+    }
+}
+
 android {
     namespace = "com.bikebuddy.mobile"
     compileSdk = flutter.compileSdkVersion
@@ -48,6 +57,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Define Google Maps API Key placeholder from local.properties or fallback
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "YOUR_GOOGLE_MAPS_API_KEY"
     }
 
     buildTypes {

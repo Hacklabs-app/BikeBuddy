@@ -19,6 +19,9 @@ import '../features/auth/presentation/screens/role_selection_screen.dart';
 import '../features/auth/presentation/screens/rider_signup_screen.dart';
 import '../features/auth/presentation/screens/owner_signup_screen.dart';
 import '../features/auth/presentation/screens/email_verification_screen.dart';
+import '../features/auth/presentation/screens/shop_setup_screen.dart';
+import '../features/auth/presentation/screens/admin_dashboard_screen.dart';
+import '../features/auth/presentation/screens/profile_screen.dart';
 
 // Route constant names for easier management
 class AppRoutes {
@@ -40,7 +43,7 @@ class AppRoutes {
 }
 
 const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
-const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan, AppRoutes.profile];
+const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan];
 const _registrationRoutes = [
   AppRoutes.roleSelection,
   AppRoutes.riderSignUp,
@@ -101,10 +104,20 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen(hasSeenOnboardingProvider,
       (_, __) => refreshListenable.value = !refreshListenable.value);
 
+  final initialLoc = () {
+    final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
+    if (!hasSeenOnboarding) return AppRoutes.onboarding;
+
+    // Check if user is logged in to avoid routing via /home first
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser != null) {
+      return AppRoutes.loading;
+    }
+    return AppRoutes.home;
+  }();
+
   return GoRouter(
-    initialLocation: ref.read(hasSeenOnboardingProvider)
-        ? AppRoutes.home
-        : AppRoutes.onboarding,
+    initialLocation: initialLoc,
     refreshListenable: refreshListenable,
     debugLogDiagnostics: true,
     redirect: (context, state) {
@@ -212,7 +225,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // ── Guest Guard ───────────────────────────────────────────────────────
       if (!isLoggedIn) {
         // Guests ARE allowed on Registration routes and Login routes.
-        if (_isCustomerAuthRoute(location) || _isOwnerRoute(location)) {
+        if (_isCustomerAuthRoute(location) ||
+            _isOwnerRoute(location) ||
+            location == AppRoutes.profile) {
           debugPrint(
               '[ROUTER] Guest blocked from private route. Redirecting to Home');
           return AppRoutes.home;
@@ -259,10 +274,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 2. Owner missing a Station -> Force Owner Signup/Setup
       if (isOwner && user.shopId == null) {
-        if (location != AppRoutes.ownerSignUp &&
-            location != AppRoutes.shopSetup) {
+        if (location != AppRoutes.shopSetup) {
           debugPrint('[ROUTER] Redirecting: Owner needs to setup station');
-          return AppRoutes.ownerSignUp;
+          return AppRoutes.shopSetup;
         }
         return null;
       }
@@ -279,12 +293,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 4. OWNER ACCESS CONTROL
       if (isOwner) {
-        if (location == AppRoutes.home || location == '/') {
+        if (user.shopId != null && location == AppRoutes.shopSetup) {
+          debugPrint('[ROUTER] Redirecting: Owner has setup station, routing to admin dashboard');
+          return AppRoutes.admin;
+        }
+        if (location == AppRoutes.home ||
+            location == '/' ||
+            location == AppRoutes.loading) {
           return AppRoutes.admin;
         }
         if (_isCustomerAuthRoute(location)) return AppRoutes.admin;
       } else {
         if (_isOwnerRoute(location)) return AppRoutes.home;
+        if (location == AppRoutes.loading) return AppRoutes.home;
       }
 
       // 5. LOGIN ESCAPE
@@ -324,14 +345,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: '/login-callback', builder: (_, __) => const SizedBox.shrink()),
       GoRoute(
         path: AppRoutes.admin,
-        builder: (_, __) => const CommonPlaceholderScreen(
-          title: 'Business Dashboard',
-          isOwnerView: true,
-        ),
+        builder: (_, __) => const AdminDashboardScreen(),
       ),
       GoRoute(
         path: AppRoutes.shopSetup,
-        builder: (_, __) => const CommonPlaceholderScreen(title: 'Shop Setup'),
+        builder: (_, __) => const ShopSetupScreen(),
       ),
       GoRoute(
           path: AppRoutes.home,
@@ -352,9 +370,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.profile,
-        builder: (_, __) => const CommonPlaceholderScreen(
-          title: 'Profile Settings',
-        ),
+        builder: (_, __) => const ProfileScreen(),
       ),
     ],
   );

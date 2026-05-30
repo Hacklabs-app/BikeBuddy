@@ -15,6 +15,17 @@ abstract class AuthRepository {
     required String stationName,
     required String phoneNumber,
   });
+  Future<void> setupShop({
+    required String name,
+    required String phoneNumber,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String operatingHoursOpen,
+    required String operatingHoursClose,
+    int? totalBikes,
+    int? ratePerHour,
+  });
   Future<void> sendPasswordReset(String email);
   Future<void> updatePassword(String newPassword);
   Future<void> signOut();
