@@ -106,12 +106,13 @@ void main() {
           overrides: [
             authStateProvider
                 .overrideWith((ref) => Stream.value(mocktailUser())),
-            currentUserProvider.overrideWith(() => MockCurrentUserNotifier(const UserModel(
-                  id: 'test-id',
-                  email: 'test@example.com',
-                  fullName: 'Test User',
-                  role: UserRole.pending,
-                ))),
+            currentUserProvider
+                .overrideWith(() => MockCurrentUserNotifier(const UserModel(
+                      id: 'test-id',
+                      email: 'test@example.com',
+                      fullName: 'Test User',
+                      role: UserRole.pending,
+                    ))),
           ],
         ),
       );

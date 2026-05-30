@@ -9,6 +9,7 @@ import '../../../../core/widgets/section_header.dart';
 import '../state/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/location_map_picker.dart';
+import '../widgets/shop_setup_widgets.dart';
 
 class ShopSetupScreen extends ConsumerStatefulWidget {
   const ShopSetupScreen({super.key});
@@ -196,7 +197,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
       return;
     }
 
-    final normalizedPhone = Formatters.normalizePhoneNumber(_phoneController.text.trim());
+    final normalizedPhone =
+        Formatters.normalizePhoneNumber(_phoneController.text.trim());
     if (normalizedPhone == null || normalizedPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -306,7 +308,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
-                  const SectionHeader(title: '1. Business Info', color: AppColors.green),
+                  const SectionHeader(
+                      title: '1. Business Info', color: AppColors.green),
                   const SizedBox(height: 12),
                   AuthTextField(
                     label: 'Station / Shop Name',
@@ -334,109 +337,19 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  const SectionHeader(title: '2. Operating Hours', color: AppColors.green),
+                  const SectionHeader(
+                      title: '2. Operating Hours', color: AppColors.green),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Opening Time',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            InkWell(
-                              onTap: () => _selectTime(context, true),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      _formatTime(_openTime),
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.access_time,
-                                      color: AppColors.green,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Closing Time',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            InkWell(
-                              onTap: () => _selectTime(context, false),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      _formatTime(_closeTime),
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.access_time,
-                                      color: AppColors.green,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  ShopSetupOperatingHours(
+                    openTime: _openTime,
+                    closeTime: _closeTime,
+                    onSelectOpenTime: () => _selectTime(context, true),
+                    onSelectCloseTime: () => _selectTime(context, false),
+                    formatTime: _formatTime,
                   ),
                   const SizedBox(height: 24),
-                  const SectionHeader(title: '3. Inventory & Pricing', color: AppColors.green),
+                  const SectionHeader(
+                      title: '3. Inventory & Pricing', color: AppColors.green),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -480,7 +393,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const SectionHeader(title: '4. Physical Location', color: AppColors.green),
+                  const SectionHeader(
+                      title: '4. Physical Location', color: AppColors.green),
                   const SizedBox(height: 12),
                   AuthTextField(
                     label: 'Landmark / Address Description',
@@ -495,127 +409,41 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  if (_latitude != null && _longitude != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.green, width: 1),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.check_circle, color: AppColors.green, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Location Selected!',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  Text(
-                    'Where are you now?',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isLocatingGps ? null : _getCurrentLocation,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
-                            foregroundColor: AppColors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: AppColors.green.withValues(alpha: 0.3)),
-                            ),
-                            elevation: 0,
-                          ),
-                          icon: _isLocatingGps
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(AppColors.green),
-                                  ),
-                                )
-                              : const Icon(Icons.my_location, size: 18),
-                          label: Text(
-                            _isLocatingGps ? 'Locating...' : 'At Station',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                  ShopSetupLocationPicker(
+                    latitude: _latitude,
+                    longitude: _longitude,
+                    isLocatingGps: _isLocatingGps,
+                    onGetCurrentLocation: _getCurrentLocation,
+                    onChooseOnMap: () async {
+                      final LatLng initial =
+                          _latitude != null && _longitude != null
+                              ? LatLng(_latitude!, _longitude!)
+                              : const LatLng(-1.286389, 36.817223);
+                      final messenger = ScaffoldMessenger.of(context);
+                      final LatLng? selected = await Navigator.push<LatLng>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              LocationMapPicker(initialCenter: initial),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final LatLng initial = _latitude != null && _longitude != null
-                                ? LatLng(_latitude!, _longitude!)
-                                : const LatLng(-1.286389, 36.817223);
-                            final messenger = ScaffoldMessenger.of(context);
-                            final LatLng? selected = await Navigator.push<LatLng>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LocationMapPicker(initialCenter: initial),
-                              ),
-                            );
-                            if (selected != null) {
-                              setState(() {
-                                _latitude = selected.latitude;
-                                _longitude = selected.longitude;
-                              });
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Location selected on map!',
-                                    style: GoogleFonts.inter(color: Colors.white),
-                                  ),
-                                  backgroundColor: AppColors.green,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
-                            foregroundColor: AppColors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: AppColors.green.withValues(alpha: 0.3)),
+                      );
+                      if (selected != null) {
+                        setState(() {
+                          _latitude = selected.latitude;
+                          _longitude = selected.longitude;
+                        });
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Location selected on map!',
+                              style: GoogleFonts.inter(color: Colors.white),
                             ),
-                            elevation: 0,
+                            backgroundColor: AppColors.green,
+                            behavior: SnackBarBehavior.floating,
                           ),
-                          icon: const Icon(Icons.map, size: 18),
-                          label: Text(
-                            'Choose on Map',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                        );
+                      }
+                    },
                   ),
                   const SizedBox(height: 40),
                   ElevatedButton(
@@ -636,7 +464,8 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(

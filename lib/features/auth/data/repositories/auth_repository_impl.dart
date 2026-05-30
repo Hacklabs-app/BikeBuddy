@@ -164,17 +164,21 @@ class AuthRepositoryImpl implements AuthRepository {
     debugPrint(
         '[API REQUEST] Method: setupShop, User: ${user.id}, Shop: $name, Phone: $phoneNumber');
     try {
-      final shopRes = await _client.from('shops').upsert({
-        'owner_id': user.id,
-        'name': name,
-        'phone_number': phoneNumber,
-        'address': address,
-        'latitude': latitude,
-        'longitude': longitude,
-        'operating_hours_open': operatingHoursOpen,
-        'operating_hours_close': operatingHoursClose,
-        if (totalBikes != null) 'total_bikes': totalBikes,
-      }, onConflict: 'owner_id').select('id').maybeSingle();
+      final shopRes = await _client
+          .from('shops')
+          .upsert({
+            'owner_id': user.id,
+            'name': name,
+            'phone_number': phoneNumber,
+            'address': address,
+            'latitude': latitude,
+            'longitude': longitude,
+            'operating_hours_open': operatingHoursOpen,
+            'operating_hours_close': operatingHoursClose,
+            if (totalBikes != null) 'total_bikes': totalBikes,
+          }, onConflict: 'owner_id')
+          .select('id')
+          .maybeSingle();
 
       if (shopRes != null && ratePerHour != null) {
         final shopId = shopRes['id'];

@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 
 // Load Google Maps API Key from environment define (--dart-define=GOOGLE_MAPS_API_KEY=your_key)
-const String googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY', defaultValue: '');
+const String googleMapsApiKey =
+    String.fromEnvironment('GOOGLE_MAPS_API_KEY', defaultValue: '');
 
 class LocationMapPicker extends StatefulWidget {
   final LatLng initialCenter;
@@ -24,7 +25,7 @@ class LocationMapPicker extends StatefulWidget {
 class _LocationMapPickerState extends State<LocationMapPicker> {
   GoogleMapController? _mapController;
   late LatLng _currentCenter;
-  
+
   final _searchController = TextEditingController();
   Timer? _debounce;
   List<Map<String, dynamic>> _searchResults = [];
@@ -63,7 +64,8 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
       });
 
       List<Map<String, dynamic>> results;
-      if (googleMapsApiKey.isNotEmpty && googleMapsApiKey != "YOUR_GOOGLE_MAPS_API_KEY") {
+      if (googleMapsApiKey.isNotEmpty &&
+          googleMapsApiKey != "YOUR_GOOGLE_MAPS_API_KEY") {
         results = await _fetchGooglePlaces(query);
         // Self-healing fallback: If Google Places fails (e.g. key restriction, quota, or network error), use Nominatim!
         if (results.isEmpty) {
@@ -90,12 +92,12 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
           'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${Uri.encodeComponent(query)}&key=$googleMapsApiKey&components=country:ke');
       final request = await client.getUrl(uri);
       final response = await request.close();
-      
+
       if (response.statusCode == 200) {
         final responseBody = await response.transform(utf8.decoder).join();
         final Map<String, dynamic> data = json.decode(responseBody);
         final predictions = data['predictions'] as List<dynamic>? ?? [];
-        
+
         List<Map<String, dynamic>> results = [];
         for (var pred in predictions) {
           final description = pred['description'] ?? '';
@@ -123,9 +125,10 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
       final uri = Uri.parse(
           'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=5&countrycodes=ke');
       final request = await client.getUrl(uri);
-      request.headers.set('User-Agent', 'BikeBuddyApp/1.0 (com.hacklabs.bikebuddy)');
+      request.headers
+          .set('User-Agent', 'BikeBuddyApp/1.0 (com.hacklabs.bikebuddy)');
       final response = await request.close();
-      
+
       if (response.statusCode == 200) {
         final responseBody = await response.transform(utf8.decoder).join();
         final List<dynamic> data = json.decode(responseBody);
@@ -154,14 +157,14 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
           'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$googleMapsApiKey');
       final request = await client.getUrl(uri);
       final response = await request.close();
-      
+
       if (response.statusCode == 200) {
         final responseBody = await response.transform(utf8.decoder).join();
         final Map<String, dynamic> data = json.decode(responseBody);
         final result = data['result'] as Map<String, dynamic>?;
         final geometry = result?['geometry'] as Map<String, dynamic>?;
         final location = geometry?['location'] as Map<String, dynamic>?;
-        
+
         if (location != null) {
           final lat = double.tryParse(location['lat']?.toString() ?? '') ?? 0.0;
           final lng = double.tryParse(location['lng']?.toString() ?? '') ?? 0.0;
@@ -227,10 +230,16 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
         ),
         actions: [
           IconButton(
-            icon: Icon(_currentMapType == MapType.normal ? Icons.map : Icons.satellite_alt, color: Colors.white),
+            icon: Icon(
+                _currentMapType == MapType.normal
+                    ? Icons.map
+                    : Icons.satellite_alt,
+                color: Colors.white),
             onPressed: () {
               setState(() {
-                _currentMapType = _currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
+                _currentMapType = _currentMapType == MapType.normal
+                    ? MapType.hybrid
+                    : MapType.normal;
               });
             },
           ),
@@ -262,12 +271,14 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
           // STATIC CENTER PIN
           Center(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 40), // offset for marker height alignment
+              padding: const EdgeInsets.only(
+                  bottom: 40), // offset for marker height alignment
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceDark,
                       borderRadius: BorderRadius.circular(20),
@@ -326,10 +337,12 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
                     decoration: InputDecoration(
                       hintText: 'Search for area or landmark...',
                       hintStyle: GoogleFonts.inter(color: AppColors.textMuted),
-                      prefixIcon: const Icon(Icons.search, color: AppColors.green),
+                      prefixIcon:
+                          const Icon(Icons.search, color: AppColors.green),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.white54),
+                              icon: const Icon(Icons.clear,
+                                  color: Colors.white54),
                               onPressed: () {
                                 _searchController.clear();
                                 _onSearchChanged('');
@@ -340,7 +353,8 @@ class _LocationMapPickerState extends State<LocationMapPicker> {
                                   padding: EdgeInsets.all(12),
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(AppColors.green),
+                                    valueColor:
+                                        AlwaysStoppedAnimation(AppColors.green),
                                   ),
                                 )
                               : null),

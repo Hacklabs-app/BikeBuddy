@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/user_model.dart';
-import '../../../../core/widgets/skeleton_block.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../state/auth_state.dart';
 import '../widgets/profile_form_widgets.dart';
@@ -176,14 +175,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final profilePayload = {
         'full_name': _nameController.text.trim(),
         'phone_number': _phoneController.text.trim(),
-        if (user.role == UserRole.customer) 'id_number': _idNumberController.text.trim(),
+        if (user.role == UserRole.customer)
+          'id_number': _idNumberController.text.trim(),
       };
 
       await client.from('profiles').update(profilePayload).eq('id', user.id);
 
       if (user.role == UserRole.owner && _shopDetails != null) {
         final shopName = _shopNameController.text.trim();
-        final shopTotalBikes = int.tryParse(_totalBikesController.text.trim()) ?? 0;
+        final shopTotalBikes =
+            int.tryParse(_totalBikesController.text.trim()) ?? 0;
 
         final shopPayload = {
           'name': shopName,
@@ -215,7 +216,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final updatedUser = user.copyWith(
         fullName: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
-        idNumber: user.role == UserRole.customer ? _idNumberController.text.trim() : user.idNumber,
+        idNumber: user.role == UserRole.customer
+            ? _idNumberController.text.trim()
+            : user.idNumber,
       );
       ref.read(currentUserProvider.notifier).updateLocalUser(updatedUser);
 
@@ -275,7 +278,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
         ),
         title: Text(
           'Profile Settings',
@@ -288,11 +292,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         centerTitle: true,
       ),
       body: user == null || (user.role == UserRole.owner && _isShopLoading)
-          ? _buildSkeletonLoading()
+          ? const ProfileSkeletonLoading()
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -303,7 +308,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         controller: _nameController,
                         labelText: 'Full Name',
                         icon: Icons.person_outline_rounded,
-                        validator: (val) => val == null || val.trim().isEmpty ? 'Please enter your name' : null,
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Please enter your name'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       ProfileTextField(
@@ -319,7 +326,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           labelText: 'National ID Number',
                           icon: Icons.badge_outlined,
                           keyboardType: TextInputType.number,
-                          validator: (val) => val == null || val.trim().isEmpty ? 'ID number is required' : null,
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'ID number is required'
+                              : null,
                         ),
                       ],
                     ]),
@@ -328,7 +337,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const ProfileSectionHeader(title: 'Business / Station Details'),
+                          const ProfileSectionHeader(
+                              title: 'Business / Station Details'),
                           if (_isShopLoading)
                             const Padding(
                               padding: EdgeInsets.only(right: 8.0),
@@ -337,130 +347,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 width: 14,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 1.5,
-                                  valueColor: AlwaysStoppedAnimation(AppColors.green),
+                                  valueColor:
+                                      AlwaysStoppedAnimation(AppColors.green),
                                 ),
                               ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ProfileCardContainer(children: [
-                        ProfileTextField(
-                          controller: _shopNameController,
-                          labelText: 'Station Name',
-                          icon: Icons.storefront_outlined,
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Please enter station name' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        ProfileTextField(
-                          controller: _shopPhoneController,
-                          labelText: 'Station Phone',
-                          icon: Icons.contact_phone_outlined,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 16),
-                        ProfileTextField(
-                          controller: _shopAddressController,
-                          labelText: 'Address / Landmark',
-                          icon: Icons.location_on_outlined,
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Please enter address' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: ProfileTextField(
-                                controller: _rateController,
-                                labelText: 'Amount/Hr (KES)',
-                                icon: Icons.payments_outlined,
-                                keyboardType: TextInputType.number,
-                                validator: (val) {
-                                  if (val == null || val.trim().isEmpty) return 'Required';
-                                  final parsed = int.tryParse(val.trim());
-                                  if (parsed == null || parsed < 0) return 'Invalid';
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ProfileTextField(
-                                controller: _totalBikesController,
-                                labelText: 'Total Bikes',
-                                icon: Icons.pedal_bike_rounded,
-                                keyboardType: TextInputType.number,
-                                validator: (val) {
-                                  if (val == null || val.trim().isEmpty) return 'Required';
-                                  final parsed = int.tryParse(val.trim());
-                                  if (parsed == null || parsed < 0) return 'Invalid';
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => _selectTime(context, true),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.02),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white10),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Opens At', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 10)),
-                                          const SizedBox(height: 4),
-                                          Text(_formatTime(_shopOpenTime), style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                                        ],
-                                      ),
-                                      const Icon(Icons.access_time_rounded, color: Colors.white30, size: 18),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => _selectTime(context, false),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.02),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white10),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Closes At', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 10)),
-                                          const SizedBox(height: 4),
-                                          Text(_formatTime(_shopCloseTime), style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                                        ],
-                                      ),
-                                      const Icon(Icons.access_time_rounded, color: Colors.white30, size: 18),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ]),
+                      ProfileBusinessDetailsSection(
+                        shopNameController: _shopNameController,
+                        shopPhoneController: _shopPhoneController,
+                        shopAddressController: _shopAddressController,
+                        rateController: _rateController,
+                        totalBikesController: _totalBikesController,
+                        shopOpenTime: _shopOpenTime,
+                        shopCloseTime: _shopCloseTime,
+                        onSelectOpenTime: () => _selectTime(context, true),
+                        onSelectCloseTime: () => _selectTime(context, false),
+                        formatTime: _formatTime,
+                      ),
                       const SizedBox(height: 32),
                     ],
                     SizedBox(
@@ -471,19 +377,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.green,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.green.withValues(alpha: 0.3),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          disabledBackgroundColor:
+                              AppColors.green.withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
                         ),
                         child: _isSaving
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
                               )
                             : Text(
                                 'Save Settings',
-                                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
+                                style: GoogleFonts.inter(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                       ),
                     ),
@@ -497,16 +407,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             context: context,
                             builder: (context) => AlertDialog(
                               backgroundColor: AppColors.surfaceDark,
-                              title: Text('Sign Out', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
-                              content: Text('Are you sure you want to sign out of BikeBuddy?', style: GoogleFonts.inter(color: AppColors.textMuted)),
+                              title: Text('Sign Out',
+                                  style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                              content: Text(
+                                  'Are you sure you want to sign out of BikeBuddy?',
+                                  style: GoogleFonts.inter(
+                                      color: AppColors.textMuted)),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: Text('Cancel',
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white54)),
                                 ),
                                 ElevatedButton(
                                   onPressed: () => Navigator.pop(context, true),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent,
+                                      foregroundColor: Colors.white),
                                   child: const Text('Sign Out'),
                                 ),
                               ],
@@ -514,17 +435,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           );
 
                           if (confirm == true && mounted) {
-                            await ref.read(authNotifierProvider.notifier).signOut();
+                            await ref
+                                .read(authNotifierProvider.notifier)
+                                .signOut();
                           }
                         },
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.redAccent, width: 0.8),
+                          side: const BorderSide(
+                              color: Colors.redAccent, width: 0.8),
                           foregroundColor: Colors.redAccent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
                         child: Text(
                           'Sign Out',
-                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.inter(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -533,54 +459,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
-    );
-  }
-
-  Widget _buildSkeletonLoading() {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SkeletonBlock(width: 150, height: 18),
-          SizedBox(height: 12),
-          ProfileCardContainer(children: [
-            SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12),
-            SizedBox(height: 16),
-            SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12),
-          ]),
-          SizedBox(height: 28),
-          SkeletonBlock(width: 180, height: 18),
-          SizedBox(height: 12),
-          ProfileCardContainer(children: [
-            SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12),
-            SizedBox(height: 16),
-            SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12),
-            SizedBox(height: 16),
-            SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12)),
-                SizedBox(width: 12),
-                Expanded(child: SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12)),
-              ],
-            ),
-            SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(child: SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12)),
-                SizedBox(width: 12),
-                Expanded(child: SkeletonBlock(width: double.infinity, height: 48, borderRadius: 12)),
-              ],
-            ),
-          ]),
-          SizedBox(height: 32),
-          SkeletonBlock(width: double.infinity, height: 52, borderRadius: 14),
-          SizedBox(height: 20),
-          SkeletonBlock(width: double.infinity, height: 52, borderRadius: 14),
-        ],
-      ),
     );
   }
 }

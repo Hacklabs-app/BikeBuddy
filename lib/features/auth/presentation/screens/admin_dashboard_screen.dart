@@ -14,7 +14,8 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
@@ -53,7 +54,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     try {
       final client = Supabase.instance.client;
-      
+
       final shop = await client
           .from('shops')
           .select()
@@ -66,7 +67,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         try {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('cached_shop_name', shop['name'] ?? '');
-          await prefs.setInt('cached_shop_total_bikes', shop['total_bikes'] ?? 0);
+          await prefs.setInt(
+              'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
         } catch (_) {}
 
         final activeRentalsRes = await client
@@ -74,7 +76,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             .select('id')
             .eq('shop_id', shopId)
             .eq('status', 'ongoing');
-        
+
         final activeCount = (activeRentalsRes as List).length;
 
         final activitiesRes = await client
@@ -120,8 +122,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       final newTotal = currentTotal + count;
       await client
           .from('shops')
-          .update({'total_bikes': newTotal})
-          .eq('id', shopId);
+          .update({'total_bikes': newTotal}).eq('id', shopId);
 
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -164,7 +165,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Add New Bikes',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+              color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -172,7 +174,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           children: [
             Text(
               'Increase your station\'s live bike inventory by quantity.',
-              style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13),
+              style:
+                  GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -199,7 +202,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+            child:
+                Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -213,7 +217,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.green,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Add Bikes'),
           ),
@@ -230,13 +235,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       loading: () => const Scaffold(
         backgroundColor: Color(0xFF0D0D0D),
         body: Center(
-          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(AppColors.green)),
+          child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(AppColors.green)),
         ),
       ),
       error: (err, _) => Scaffold(
         backgroundColor: const Color(0xFF0D0D0D),
         body: Center(
-          child: Text('Error loading profile: $err', style: const TextStyle(color: Colors.white)),
+          child: Text('Error loading profile: $err',
+              style: const TextStyle(color: Colors.white)),
         ),
       ),
       data: (user) {
@@ -245,13 +252,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         final stationName = _shopDetails?['name'] ?? 'Loading Station...';
         final totalBikes = _shopDetails?['total_bikes'] ?? 0;
         final activeRentals = _activeRentalsCount;
-        final availableBikes = (totalBikes - activeRentals).clamp(0, totalBikes);
+        final availableBikes =
+            (totalBikes - activeRentals).clamp(0, totalBikes);
 
         return Scaffold(
           backgroundColor: const Color(0xFF0D0D0D),
           body: _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(AppColors.green)),
+                  child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(AppColors.green)),
                 )
               : RefreshIndicator(
                   color: AppColors.green,
@@ -260,7 +269,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   child: SafeArea(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -354,8 +364,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   onTap: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Launch Bike QR scanner to initiate checkout...',
-                                            style: GoogleFonts.inter(color: Colors.white)),
+                                        content: Text(
+                                            'Launch Bike QR scanner to initiate checkout...',
+                                            style: GoogleFonts.inter(
+                                                color: Colors.white)),
                                         backgroundColor: AppColors.green,
                                         behavior: SnackBarBehavior.floating,
                                       ),
@@ -407,24 +419,38 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   itemCount: _recentActivities.length,
                                   itemBuilder: (context, index) {
                                     final activity = _recentActivities[index];
-                                    final riderProfile = activity['profiles'] as Map<String, dynamic>?;
-                                    final riderName = riderProfile?['full_name'] ?? 'Rider';
-                                    final bikeObj = activity['bikes'] as Map<String, dynamic>?;
-                                    final bikeId = bikeObj?['identifier'] ?? 'Bike';
-                                    final status = activity['status'] as String? ?? 'ongoing';
-                                    final startTimeStr = activity['start_time'] as String?;
-                                    
+                                    final riderProfile = activity['profiles']
+                                        as Map<String, dynamic>?;
+                                    final riderName =
+                                        riderProfile?['full_name'] ?? 'Rider';
+                                    final bikeObj = activity['bikes']
+                                        as Map<String, dynamic>?;
+                                    final bikeId =
+                                        bikeObj?['identifier'] ?? 'Bike';
+                                    final status =
+                                        activity['status'] as String? ??
+                                            'ongoing';
+                                    final startTimeStr =
+                                        activity['start_time'] as String?;
+
                                     String relativeTime = 'Just now';
                                     if (startTimeStr != null) {
                                       try {
-                                        final startTime = DateTime.parse(startTimeStr).toLocal();
-                                        final diff = DateTime.now().difference(startTime);
+                                        final startTime =
+                                            DateTime.parse(startTimeStr)
+                                                .toLocal();
+                                        final diff = DateTime.now()
+                                            .difference(startTime);
                                         if (diff.inMinutes < 60) {
-                                          relativeTime = '${diff.inMinutes} mins ago';
+                                          relativeTime =
+                                              '${diff.inMinutes} mins ago';
                                         } else if (diff.inHours < 24) {
-                                          relativeTime = '${diff.inHours} hrs ago';
+                                          relativeTime =
+                                              '${diff.inHours} hrs ago';
                                         } else {
-                                          relativeTime = DateFormat('MMM dd, hh:mm a').format(startTime);
+                                          relativeTime =
+                                              DateFormat('MMM dd, hh:mm a')
+                                                  .format(startTime);
                                         }
                                       } catch (_) {}
                                     }
@@ -435,7 +461,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                       statusColor: status == 'ongoing'
                                           ? Colors.white54
                                           : AppColors.green,
-                                      statusText: status == 'ongoing' ? 'Ongoing' : 'Completed',
+                                      statusText: status == 'ongoing'
+                                          ? 'Ongoing'
+                                          : 'Completed',
                                     );
                                   },
                                 ),

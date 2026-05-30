@@ -294,7 +294,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 4. OWNER ACCESS CONTROL
       if (isOwner) {
         if (user.shopId != null && location == AppRoutes.shopSetup) {
-          debugPrint('[ROUTER] Redirecting: Owner has setup station, routing to admin dashboard');
+          debugPrint(
+              '[ROUTER] Redirecting: Owner has setup station, routing to admin dashboard');
           return AppRoutes.admin;
         }
         if (location == AppRoutes.home ||

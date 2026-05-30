@@ -82,7 +82,8 @@ class DashboardActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: border ? AppColors.green : Colors.black, size: 20),
+            Icon(icon,
+                color: border ? AppColors.green : Colors.black, size: 20),
             const SizedBox(width: 8),
             Text(
               label,

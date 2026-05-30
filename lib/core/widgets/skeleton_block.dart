@@ -16,7 +16,8 @@ class SkeletonBlock extends StatefulWidget {
   State<SkeletonBlock> createState() => _SkeletonBlockState();
 }
 
-class _SkeletonBlockState extends State<SkeletonBlock> with SingleTickerProviderStateMixin {
+class _SkeletonBlockState extends State<SkeletonBlock>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
