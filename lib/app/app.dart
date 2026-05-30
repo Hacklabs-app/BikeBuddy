@@ -22,6 +22,7 @@ import '../features/auth/presentation/screens/email_verification_screen.dart';
 import '../features/auth/presentation/screens/shop_setup_screen.dart';
 import '../features/auth/presentation/screens/admin_dashboard_screen.dart';
 import '../features/auth/presentation/screens/profile_screen.dart';
+import '../features/manual_rental/presentation/screens/manual_rental_screen.dart';
 
 // Route constant names for easier management
 class AppRoutes {
@@ -40,9 +41,10 @@ class AppRoutes {
   static const scan = '/scan';
   static const profile = '/profile';
   static const emailVerification = '/email-verification';
+  static const manualRental = '/manual-rental';
 }
 
-const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup];
+const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup, AppRoutes.manualRental];
 const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan];
 const _registrationRoutes = [
   AppRoutes.roleSelection,
@@ -351,6 +353,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.shopSetup,
         builder: (_, __) => const ShopSetupScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.manualRental,
+        builder: (_, __) => const ManualRentalScreen(),
       ),
       GoRoute(
           path: AppRoutes.home,
