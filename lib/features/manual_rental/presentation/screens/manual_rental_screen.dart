@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -16,216 +17,7 @@ class ManualRentalScreen extends ConsumerStatefulWidget {
 }
 
 class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _idController = TextEditingController();
-  final _bikeController = TextEditingController();
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _idController.dispose();
-    _bikeController.dispose();
-    super.dispose();
-  }
-
-  void _showStartRentalBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            top: 24,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-          ),
-          decoration: const BoxDecoration(
-            color: Color(0xFF141419),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(28),
-              topRight: Radius.circular(28),
-            ),
-            border: Border(
-              top: BorderSide(color: Colors.white10),
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Register Customer Check-In',
-                    style: GoogleFonts.outfit(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Check out a bike for a customer.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _nameController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: _buildInputDecoration(
-                      labelText: 'Customer Name',
-                      hintText: 'Enter full name',
-                      icon: Icons.person_outline_rounded,
-                    ),
-                    validator: (val) => val == null || val.trim().isEmpty
-                        ? 'Name is required'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _phoneController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    keyboardType: TextInputType.phone,
-                    decoration: _buildInputDecoration(
-                      labelText: 'Phone Number',
-                      hintText: 'e.g. +254 700 000 000',
-                      icon: Icons.phone_outlined,
-                    ),
-                    validator: (val) => val == null || val.trim().isEmpty
-                        ? 'Phone is required'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _idController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: _buildInputDecoration(
-                      labelText: 'ID / Admission Number',
-                      hintText: 'e.g. 12345678 or Admission No.',
-                      icon: Icons.badge_outlined,
-                    ),
-                    validator: (val) => val == null || val.trim().isEmpty
-                        ? 'ID / Admission Number is required'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _bikeController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: _buildInputDecoration(
-                      labelText: 'Bike Label/ID (Optional)',
-                      hintText: 'e.g. MTB-04',
-                      icon: Icons.pedal_bike_rounded,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          ref.read(manualRentalsProvider.notifier).startRental(
-                                customerName: _nameController.text.trim(),
-                                customerPhone: _phoneController.text.trim(),
-                                nationalId: _idController.text.trim(),
-                                bikeLabel: _bikeController.text.trim().isNotEmpty
-                                    ? _bikeController.text.trim()
-                                    : 'Bike',
-                              );
-                          _nameController.clear();
-                          _phoneController.clear();
-                          _idController.clear();
-                          _bikeController.clear();
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Rental started successfully!',
-                                  style: GoogleFonts.inter(color: Colors.white)),
-                              backgroundColor: AppColors.green,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Start Rental',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  InputDecoration _buildInputDecoration({
-    required String labelText,
-    required String hintText,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13),
-      hintText: hintText,
-      hintStyle: GoogleFonts.inter(color: Colors.white24, fontSize: 13),
-      prefixIcon: Icon(icon, color: Colors.white30, size: 20),
-      filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.02),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.white10),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: AppColors.green),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.redAccent),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.redAccent),
-        borderRadius: BorderRadius.circular(14),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +34,7 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Manual Rentals',
+          'Activity',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -399,11 +191,7 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                       ),
                                       const SizedBox(height: 8),
                                       GestureDetector(
-                                        onTap: () {
-                                          ref
-                                              .read(manualRentalsProvider.notifier)
-                                              .deleteRental(rental.id);
-                                        },
+                                        onTap: () => _showDeleteConfirmation(context, rental),
                                         child: const Icon(
                                           Icons.delete_outline_rounded,
                                           color: Colors.redAccent,
@@ -419,27 +207,6 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                         },
                       ),
                   ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FloatingActionButton.extended(
-                  onPressed: _showStartRentalBottomSheet,
-                  backgroundColor: AppColors.green,
-                  foregroundColor: Colors.black,
-                  elevation: 0,
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
-                  label: Text(
-                    'Register New Rental',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -570,6 +337,35 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                   ),
                 ],
               ),
+              if (rental.status == ManualRentalStatus.active) ...[
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showEndRentalReceipt(rental);
+                    },
+                    icon: const Icon(Icons.assignment_return_outlined, size: 18),
+                    label: Text(
+                      'Return Bike',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
             ],
           ),
@@ -708,6 +504,56 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, ManualRental rental) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Delete Activity Log?',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to permanently delete the rental record for ${rental.customerName}? This action cannot be undone.',
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                ref.read(manualRentalsProvider.notifier).deleteRental(rental.id);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Rental record deleted.',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.redAccent,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
         );
       },
     );

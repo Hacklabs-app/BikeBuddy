@@ -159,6 +159,33 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showReturnConfirmation(context, rental, _duration);
+                  },
+                  icon: const Icon(Icons.assignment_return_outlined, size: 18),
+                  label: Text(
+                    'Return Bike',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
             ],
           ),

@@ -69,13 +69,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       if (shop != null) {
         final shopId = shop['id'];
 
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cached_shop_name', shop['name'] ?? '');
-          await prefs.setInt(
-              'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
-        } catch (_) {}
-
         final activeRentalsRes = await client
             .from('rentals')
             .select('id')
@@ -83,6 +76,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             .eq('status', 'ongoing');
 
         final activeCount = (activeRentalsRes as List).length;
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_shop_name', shop['name'] ?? '');
+          await prefs.setInt(
+              'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
+          await prefs.setInt('cached_active_database_rentals', activeCount);
+        } catch (_) {}
 
         final activitiesRes = await client
             .from('rentals')
@@ -537,30 +538,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             ],
                           ),
 
-                          // Dynamic Active Rentals List
-                          if (activeManualRentals.isNotEmpty) ...[
-                            const SizedBox(height: 28),
-                            Text(
-                              'Active Rentals (${activeManualRentals.length})',
-                              style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: activeManualRentals.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
-                              itemBuilder: (context, idx) {
-                                final rental = activeManualRentals[idx];
-                                return ActiveManualRentalTile(rental: rental);
-                              },
-                            ),
-                          ],
-
                           const SizedBox(height: 28),
                           Text(
                             'Quick Operations',
@@ -575,7 +552,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             children: [
                               Expanded(
                                 child: DashboardActionButton(
-                                  label: 'Rent Out Bike',
+                                  label: 'Quick Lease',
                                   icon: Icons.qr_code_scanner_rounded,
                                   color: AppColors.green,
                                   onTap: () {
@@ -604,6 +581,31 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               ),
                             ],
                           ),
+
+                          // Dynamic Active Rentals List
+                          if (activeManualRentals.isNotEmpty) ...[
+                            const SizedBox(height: 28),
+                            Text(
+                              'Active Rentals (${activeManualRentals.length})',
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: activeManualRentals.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              itemBuilder: (context, idx) {
+                                final rental = activeManualRentals[idx];
+                                return ActiveManualRentalTile(rental: rental);
+                              },
+                            ),
+                          ],
+
                           const SizedBox(height: 28),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -707,7 +709,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             backgroundColor: AppColors.green,
             icon: const Icon(Icons.add, color: Colors.black),
             label: Text(
-              'Manual Rent',
+              'Lease',
               style: GoogleFonts.inter(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
