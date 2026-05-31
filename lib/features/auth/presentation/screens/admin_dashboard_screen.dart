@@ -729,16 +729,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                       }
                                     }
 
+                                    final bikeDisplayName = bikeId.startsWith('#') ||
+                                            int.tryParse(bikeId) != null
+                                        ? 'Bike $bikeId'
+                                        : bikeId;
+
                                     return GestureDetector(
                                       onTap: () =>
                                           _showActivityDetails(context, item),
                                       child: ActivityItem(
-                                        title: bikeId.startsWith('#') ||
-                                                int.tryParse(bikeId) != null
-                                            ? 'Bike $bikeId'
-                                            : bikeId,
+                                        title: riderName,
                                         subtitle:
-                                            'By $riderName · $relativeTime',
+                                            '${isOngoing ? 'Leased' : 'Returned'} $bikeDisplayName · $relativeTime',
                                         statusColor: isOngoing
                                             ? Colors.white54
                                             : AppColors.green,

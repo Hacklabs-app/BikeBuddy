@@ -21,6 +21,19 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
     final activeRentals = ref.watch(activeManualRentalsProvider);
     final completedRentals = ref.watch(completedManualRentalsProvider);
 
+    final now = DateTime.now();
+    final todayCompleted = completedRentals.where((r) {
+      if (r.endTime == null) return false;
+      final endLocal = r.endTime!.toLocal();
+      return endLocal.year == now.year &&
+          endLocal.month == now.month &&
+          endLocal.day == now.day;
+    });
+    final totalEarnedToday = todayCompleted.fold<double>(
+      0.0,
+      (sum, r) => sum + (r.totalAmount ?? 0.0),
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
@@ -63,9 +76,9 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildStatCard(
-                            title: 'Completed Today',
-                            value: '${completedRentals.length}',
-                            color: Colors.white70,
+                            title: 'Daily Earnings',
+                            value: 'Ksh. ${totalEarnedToday.toStringAsFixed(0)}',
+                            color: AppColors.green,
                           ),
                         ),
                       ],
@@ -268,14 +281,16 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                             color: AppColors.green,
                                           ),
                                         ),
-                                        const SizedBox(height: 8),
-                                        GestureDetector(
-                                          onTap: () => _showDeleteConfirmation(
+                                        const SizedBox(height: 4),
+                                        IconButton(
+                                          onPressed: () => _showDeleteConfirmation(
                                               context, rental),
-                                          child: const Icon(
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.all(8),
+                                          icon: const Icon(
                                             Icons.delete_outline_rounded,
                                             color: Colors.redAccent,
-                                            size: 16,
+                                            size: 22,
                                           ),
                                         ),
                                       ],
