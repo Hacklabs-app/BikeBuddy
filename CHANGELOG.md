@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.4.1...bike_buddy-v1.4.2) (2026-05-31)
+
+
+### Bug Fixes
+
+* **ci:** trigger play store deploy on tag release and simplify triggers ([2ba74b5](https://github.com/Hacklabs-app/BikeBuddy/commit/2ba74b5c434290ac3b7fc6e056e42fdb5c1a1f67))
+* **ci:** trigger play store deploy on tag release instead of commit messages ([7576a04](https://github.com/Hacklabs-app/BikeBuddy/commit/7576a04d0e6b83deb575694b21d3cc9df083630c))
+
 ## [1.4.1](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.4.0...bike_buddy-v1.4.1) (2026-05-31)
 
 
