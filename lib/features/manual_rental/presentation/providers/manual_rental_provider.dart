@@ -74,7 +74,8 @@ class ManualRentalNotifier extends Notifier<List<ManualRental>> {
             'shop_id': shopId,
             'status': 'ongoing',
             'start_time': rental.startTime.toIso8601String(),
-            'notes': 'Offline manual checkout. Name: ${rental.customerName}, Phone: ${rental.customerPhone}, ID: ${rental.nationalId}',
+            'notes':
+                'Offline manual checkout. Name: ${rental.customerName}, Phone: ${rental.customerPhone}, ID: ${rental.nationalId}',
           });
         }
       }
@@ -90,11 +91,12 @@ class ManualRentalNotifier extends Notifier<List<ManualRental>> {
     final updated = state.map((rental) {
       if (rental.id == id && rental.status == ManualRentalStatus.active) {
         final duration = now.difference(rental.startTime);
-        
+
         // Calculate amount (minimum 1 minute to prevent 0.0 calculations in quick tests)
         final minutes = duration.inMinutes.clamp(1, double.infinity);
         final hours = minutes / 60.0;
-        final totalAmount = double.parse((hours * rental.hourlyRate).toStringAsFixed(2));
+        final totalAmount =
+            double.parse((hours * rental.hourlyRate).toStringAsFixed(2));
 
         completedRental = rental.copyWith(
           endTime: now,
@@ -134,7 +136,8 @@ class ManualRentalNotifier extends Notifier<List<ManualRental>> {
   }
 }
 
-final manualRentalsProvider = NotifierProvider<ManualRentalNotifier, List<ManualRental>>(() {
+final manualRentalsProvider =
+    NotifierProvider<ManualRentalNotifier, List<ManualRental>>(() {
   return ManualRentalNotifier();
 });
 
@@ -146,5 +149,7 @@ final activeManualRentalsProvider = Provider<List<ManualRental>>((ref) {
 
 final completedManualRentalsProvider = Provider<List<ManualRental>>((ref) {
   final rentals = ref.watch(manualRentalsProvider);
-  return rentals.where((r) => r.status == ManualRentalStatus.completed).toList();
+  return rentals
+      .where((r) => r.status == ManualRentalStatus.completed)
+      .toList();
 });

@@ -247,19 +247,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         if (item is ManualRental) {
           title = item.customerName;
           subtitle = 'Manual Rental';
-          statusText = item.status == ManualRentalStatus.active ? 'Ongoing' : 'Completed';
-          statusColor = item.status == ManualRentalStatus.active ? Colors.white54 : AppColors.green;
+          statusText = item.status == ManualRentalStatus.active
+              ? 'Ongoing'
+              : 'Completed';
+          statusColor = item.status == ManualRentalStatus.active
+              ? Colors.white54
+              : AppColors.green;
 
           details = [
             _buildDetailRow('Customer Name', item.customerName),
             _buildDetailRow('Phone Number', item.customerPhone),
-            _buildDetailRow('ID / Admission Number', item.nationalId.isNotEmpty ? item.nationalId : 'None provided'),
+            _buildDetailRow('ID / Admission Number',
+                item.nationalId.isNotEmpty ? item.nationalId : 'None provided'),
             _buildDetailRow('Bicycle Label', item.bikeLabel),
-            _buildDetailRow('Start Time', DateFormat('MMM dd, yyyy · hh:mm a').format(item.startTime)),
+            _buildDetailRow('Start Time',
+                DateFormat('MMM dd, yyyy · hh:mm a').format(item.startTime)),
             if (item.endTime != null)
-              _buildDetailRow('End Time', DateFormat('MMM dd, yyyy · hh:mm a').format(item.endTime!)),
+              _buildDetailRow('End Time',
+                  DateFormat('MMM dd, yyyy · hh:mm a').format(item.endTime!)),
             if (item.totalAmount != null)
-              _buildDetailRow('Amount Paid', 'Ksh. ${item.totalAmount!.toStringAsFixed(2)}'),
+              _buildDetailRow('Amount Paid',
+                  'Ksh. ${item.totalAmount!.toStringAsFixed(2)}'),
           ];
         } else {
           final profile = item['profiles'] as Map<String, dynamic>?;
@@ -278,7 +286,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           String startTimeFormatted = 'Unknown';
           if (startTimeStr != null) {
             try {
-              startTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a').format(DateTime.parse(startTimeStr).toLocal());
+              startTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
+                  .format(DateTime.parse(startTimeStr).toLocal());
             } catch (_) {}
           }
 
@@ -286,12 +295,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           String endTimeFormatted = 'Ongoing';
           if (endTimeStr != null) {
             try {
-              endTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a').format(DateTime.parse(endTimeStr).toLocal());
+              endTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
+                  .format(DateTime.parse(endTimeStr).toLocal());
             } catch (_) {}
           }
 
           final totalAmt = item['total_amount'];
-          final amountStr = totalAmt != null ? 'Ksh. ${(totalAmt as num).toStringAsFixed(2)}' : 'Ongoing';
+          final amountStr = totalAmt != null
+              ? 'Ksh. ${(totalAmt as num).toStringAsFixed(2)}'
+              : 'Ongoing';
 
           details = [
             _buildDetailRow('Rider Name', riderName),
@@ -354,11 +366,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                      border:
+                          Border.all(color: statusColor.withValues(alpha: 0.2)),
                     ),
                     child: Text(
                       statusText.toUpperCase(),
@@ -425,14 +439,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
         final stationName = _shopDetails?['name'] ?? 'Loading Station...';
         final totalBikes = _shopDetails?['total_bikes'] ?? 0;
-        
+
         // Watch active manual rentals to combine them dynamically into the dashboard metrics
         final activeManualRentals = ref.watch(activeManualRentalsProvider);
         final activeManualCount = activeManualRentals.length;
         final manualRentals = ref.watch(manualRentalsProvider);
-        
+
         final totalActiveRentals = _activeRentalsCount + activeManualCount;
-        final availableBikes = (totalBikes - totalActiveRentals).clamp(0, totalBikes);
+        final availableBikes =
+            (totalBikes - totalActiveRentals).clamp(0, totalBikes);
 
         // Combine database activities and local manual rentals into a sorted list
         final List<dynamic> unifiedActivities = [...manualRentals];
@@ -443,8 +458,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           }
         }
         unifiedActivities.sort((a, b) {
-          final DateTime timeA = a is ManualRental ? a.startTime : DateTime.parse(a['start_time']);
-          final DateTime timeB = b is ManualRental ? b.startTime : DateTime.parse(b['start_time']);
+          final DateTime timeA =
+              a is ManualRental ? a.startTime : DateTime.parse(a['start_time']);
+          final DateTime timeB =
+              b is ManualRental ? b.startTime : DateTime.parse(b['start_time']);
           return timeB.compareTo(timeA);
         });
 
@@ -463,7 +480,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.only(
-                          left: 20, right: 20, top: 16, bottom: 80), // extra padding for FAB
+                          left: 20,
+                          right: 20,
+                          top: 16,
+                          bottom: 80), // extra padding for FAB
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -598,7 +618,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: activeManualRentals.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
                               itemBuilder: (context, idx) {
                                 final rental = activeManualRentals[idx];
                                 return ActiveManualRentalTile(rental: rental);
@@ -620,7 +641,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               ),
                               if (unifiedActivities.isNotEmpty)
                                 GestureDetector(
-                                  onTap: () => context.push(AppRoutes.manualRental),
+                                  onTap: () =>
+                                      context.push(AppRoutes.manualRental),
                                   behavior: HitTestBehavior.opaque,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -645,56 +667,83 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   itemCount: unifiedActivities.length,
                                   itemBuilder: (context, index) {
                                     final item = unifiedActivities[index];
-                                    
+
                                     String bikeId;
                                     String riderName;
                                     String relativeTime = 'Just now';
                                     bool isOngoing;
-                                    
+
                                     if (item is ManualRental) {
                                       bikeId = item.bikeLabel;
                                       riderName = item.customerName;
-                                      isOngoing = item.status == ManualRentalStatus.active;
-                                      
-                                      final diff = DateTime.now().difference(item.startTime);
+                                      isOngoing = item.status ==
+                                          ManualRentalStatus.active;
+
+                                      final diff = DateTime.now()
+                                          .difference(item.startTime);
                                       if (diff.inMinutes < 60) {
-                                        relativeTime = '${diff.inMinutes} mins ago';
+                                        relativeTime =
+                                            '${diff.inMinutes} mins ago';
                                       } else if (diff.inHours < 24) {
-                                        relativeTime = '${diff.inHours} hrs ago';
+                                        relativeTime =
+                                            '${diff.inHours} hrs ago';
                                       } else {
-                                        relativeTime = DateFormat('MMM dd, hh:mm a').format(item.startTime);
+                                        relativeTime =
+                                            DateFormat('MMM dd, hh:mm a')
+                                                .format(item.startTime);
                                       }
                                     } else {
-                                      final riderProfile = item['profiles'] as Map<String, dynamic>?;
-                                      riderName = riderProfile?['full_name'] ?? 'Rider';
-                                      final bikeObj = item['bikes'] as Map<String, dynamic>?;
+                                      final riderProfile = item['profiles']
+                                          as Map<String, dynamic>?;
+                                      riderName =
+                                          riderProfile?['full_name'] ?? 'Rider';
+                                      final bikeObj = item['bikes']
+                                          as Map<String, dynamic>?;
                                       bikeId = bikeObj?['identifier'] ?? 'Bike';
-                                      final status = item['status'] as String? ?? 'ongoing';
+                                      final status =
+                                          item['status'] as String? ??
+                                              'ongoing';
                                       isOngoing = status == 'ongoing';
-                                      
-                                      final startTimeStr = item['start_time'] as String?;
+
+                                      final startTimeStr =
+                                          item['start_time'] as String?;
                                       if (startTimeStr != null) {
                                         try {
-                                          final startTime = DateTime.parse(startTimeStr).toLocal();
-                                          final diff = DateTime.now().difference(startTime);
+                                          final startTime =
+                                              DateTime.parse(startTimeStr)
+                                                  .toLocal();
+                                          final diff = DateTime.now()
+                                              .difference(startTime);
                                           if (diff.inMinutes < 60) {
-                                            relativeTime = '${diff.inMinutes} mins ago';
+                                            relativeTime =
+                                                '${diff.inMinutes} mins ago';
                                           } else if (diff.inHours < 24) {
-                                            relativeTime = '${diff.inHours} hrs ago';
+                                            relativeTime =
+                                                '${diff.inHours} hrs ago';
                                           } else {
-                                            relativeTime = DateFormat('MMM dd, hh:mm a').format(startTime);
+                                            relativeTime =
+                                                DateFormat('MMM dd, hh:mm a')
+                                                    .format(startTime);
                                           }
                                         } catch (_) {}
                                       }
                                     }
 
                                     return GestureDetector(
-                                      onTap: () => _showActivityDetails(context, item),
+                                      onTap: () =>
+                                          _showActivityDetails(context, item),
                                       child: ActivityItem(
-                                        title: bikeId.startsWith('#') || int.tryParse(bikeId) != null ? 'Bike $bikeId' : bikeId,
-                                        subtitle: 'By $riderName · $relativeTime',
-                                        statusColor: isOngoing ? Colors.white54 : AppColors.green,
-                                        statusText: isOngoing ? 'Ongoing' : 'Completed',
+                                        title: bikeId.startsWith('#') ||
+                                                int.tryParse(bikeId) != null
+                                            ? 'Bike $bikeId'
+                                            : bikeId,
+                                        subtitle:
+                                            'By $riderName · $relativeTime',
+                                        statusColor: isOngoing
+                                            ? Colors.white54
+                                            : AppColors.green,
+                                        statusText:
+                                            isOngoing ? 'Ongoing' : 'Completed',
                                       ),
                                     );
                                   },
@@ -711,7 +760,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   SnackBar(
                     content: Text(
                       'No available bikes in inventory! Add new bikes or complete active checkouts to lease.',
-                      style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     backgroundColor: Colors.redAccent,
                     behavior: SnackBarBehavior.floating,

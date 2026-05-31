@@ -16,8 +16,6 @@ class ManualRentalScreen extends ConsumerStatefulWidget {
 }
 
 class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
-
-
   @override
   Widget build(BuildContext context) {
     final activeRentals = ref.watch(activeManualRentalsProvider);
@@ -29,7 +27,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -46,7 +45,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -80,7 +80,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                       _buildEmptyState(
                         icon: Icons.timer_outlined,
                         title: 'No Active Rentals',
-                        subtitle: 'Use the button below to register a customer and start timing.',
+                        subtitle:
+                            'Use the button below to register a customer and start timing.',
                       )
                     else
                       ListView.builder(
@@ -116,7 +117,7 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                           final durationStr = _getDurationString(
                               rental.startTime, rental.endTime);
 
-                           return Dismissible(
+                          return Dismissible(
                             key: Key('rental_${rental.id}'),
                             direction: DismissDirection.endToStart,
                             confirmDismiss: (direction) async {
@@ -125,7 +126,9 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                 builder: (context) {
                                   return AlertDialog(
                                     backgroundColor: AppColors.surfaceDark,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16)),
                                     title: Text(
                                       'Delete Activity Log?',
                                       style: GoogleFonts.outfit(
@@ -135,15 +138,20 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                     ),
                                     content: Text(
                                       'Are you sure you want to permanently delete the rental record for ${rental.customerName}? This action cannot be undone.',
-                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white70, fontSize: 14),
                                     ),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.pop(context, false),
-                                        child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: Text('Cancel',
+                                            style: GoogleFonts.inter(
+                                                color: Colors.white54)),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () => Navigator.pop(context, true),
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.redAccent,
                                           foregroundColor: Colors.white,
@@ -157,12 +165,15 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                               return result ?? false;
                             },
                             onDismissed: (direction) {
-                              ref.read(manualRentalsProvider.notifier).deleteRental(rental.id);
+                              ref
+                                  .read(manualRentalsProvider.notifier)
+                                  .deleteRental(rental.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'Rental record deleted.',
-                                    style: GoogleFonts.inter(color: Colors.white),
+                                    style:
+                                        GoogleFonts.inter(color: Colors.white),
                                   ),
                                   backgroundColor: Colors.redAccent,
                                   behavior: SnackBarBehavior.floating,
@@ -176,7 +187,9 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.redAccent.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                    color: Colors.redAccent
+                                        .withValues(alpha: 0.3)),
                               ),
                               child: const Icon(
                                 Icons.delete_outline_rounded,
@@ -185,7 +198,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                               ),
                             ),
                             child: GestureDetector(
-                              onTap: () => _showContactOptionsBottomSheet(context, rental),
+                              onTap: () => _showContactOptionsBottomSheet(
+                                  context, rental),
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
@@ -193,14 +207,17 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                   color: AppColors.surfaceDark,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.03)),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.03)),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             rental.customerName,
@@ -240,7 +257,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                       ),
                                     ),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Text(
                                           'Ksh ${rental.totalAmount?.toStringAsFixed(2) ?? '0.00'}',
@@ -252,7 +270,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         GestureDetector(
-                                          onTap: () => _showDeleteConfirmation(context, rental),
+                                          onTap: () => _showDeleteConfirmation(
+                                              context, rental),
                                           child: const Icon(
                                             Icons.delete_outline_rounded,
                                             color: Colors.redAccent,
@@ -278,7 +297,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
     );
   }
 
-  void _showContactOptionsBottomSheet(BuildContext context, ManualRental rental) {
+  void _showContactOptionsBottomSheet(
+      BuildContext context, ManualRental rental) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -335,12 +355,16 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                     children: [
                       Text(
                         'Phone Number',
-                        style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: AppColors.textMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         rental.customerPhone,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -353,7 +377,9 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not initiate call to ${rental.customerPhone}')),
+                            SnackBar(
+                                content: Text(
+                                    'Could not initiate call to ${rental.customerPhone}')),
                           );
                         }
                       }
@@ -364,7 +390,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                         color: AppColors.green.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.phone_rounded, color: AppColors.green, size: 20),
+                      child: const Icon(Icons.phone_rounded,
+                          color: AppColors.green, size: 20),
                     ),
                   ),
                 ],
@@ -375,12 +402,18 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                 children: [
                   Text(
                     'ID / Admission Number',
-                    style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                    style: GoogleFonts.inter(
+                        color: AppColors.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    rental.nationalId.isNotEmpty ? rental.nationalId : 'None provided',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    rental.nationalId.isNotEmpty
+                        ? rental.nationalId
+                        : 'None provided',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -390,12 +423,16 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                 children: [
                   Text(
                     'Bicycle Label / ID',
-                    style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                    style: GoogleFonts.inter(
+                        color: AppColors.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     rental.bikeLabel,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -413,7 +450,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.surfaceDark,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             'Delete Activity Log?',
             style: GoogleFonts.outfit(
@@ -428,11 +466,14 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () {
-                ref.read(manualRentalsProvider.notifier).deleteRental(rental.id);
+                ref
+                    .read(manualRentalsProvider.notifier)
+                    .deleteRental(rental.id);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -574,5 +615,3 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
     }
   }
 }
-
-

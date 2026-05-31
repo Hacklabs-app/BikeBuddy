@@ -12,10 +12,12 @@ class ActiveManualRentalTile extends ConsumerStatefulWidget {
   const ActiveManualRentalTile({super.key, required this.rental});
 
   @override
-  ConsumerState<ActiveManualRentalTile> createState() => _ActiveManualRentalTileState();
+  ConsumerState<ActiveManualRentalTile> createState() =>
+      _ActiveManualRentalTileState();
 }
 
-class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile> {
+class _ActiveManualRentalTileState
+    extends ConsumerState<ActiveManualRentalTile> {
   Timer? _timer;
   late Duration _duration;
 
@@ -38,7 +40,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
     super.dispose();
   }
 
-  void _showContactOptionsBottomSheet(BuildContext context, ManualRental rental) {
+  void _showContactOptionsBottomSheet(
+      BuildContext context, ManualRental rental) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -95,12 +98,16 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                     children: [
                       Text(
                         'Phone Number',
-                        style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: AppColors.textMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         rental.customerPhone,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -113,7 +120,9 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not initiate call to ${rental.customerPhone}')),
+                            SnackBar(
+                                content: Text(
+                                    'Could not initiate call to ${rental.customerPhone}')),
                           );
                         }
                       }
@@ -124,7 +133,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                         color: AppColors.green.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.phone_rounded, color: AppColors.green, size: 20),
+                      child: const Icon(Icons.phone_rounded,
+                          color: AppColors.green, size: 20),
                     ),
                   ),
                 ],
@@ -135,12 +145,18 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                 children: [
                   Text(
                     'ID / Admission Number',
-                    style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                    style: GoogleFonts.inter(
+                        color: AppColors.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    rental.nationalId.isNotEmpty ? rental.nationalId : 'None provided',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    rental.nationalId.isNotEmpty
+                        ? rental.nationalId
+                        : 'None provided',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -150,12 +166,16 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                 children: [
                   Text(
                     'Bicycle Label / ID',
-                    style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                    style: GoogleFonts.inter(
+                        color: AppColors.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     rental.bikeLabel,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -199,7 +219,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
     final hours = _duration.inHours;
     final minutes = _duration.inMinutes.remainder(60);
     final seconds = _duration.inSeconds.remainder(60);
-    final timeStr = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 
     return GestureDetector(
       onTap: () => _showContactOptionsBottomSheet(context, widget.rental),
@@ -236,7 +257,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.timer_outlined, color: AppColors.green, size: 14),
+                      const Icon(Icons.timer_outlined,
+                          color: AppColors.green, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         timeStr,
@@ -253,7 +275,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
             ),
             const SizedBox(width: 12),
             ElevatedButton(
-              onPressed: () => _showReturnConfirmation(context, widget.rental, _duration),
+              onPressed: () =>
+                  _showReturnConfirmation(context, widget.rental, _duration),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.green.withValues(alpha: 0.1),
                 foregroundColor: AppColors.green,
@@ -261,7 +284,8 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: Text(
                 'Return Bike',
@@ -277,17 +301,20 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
     );
   }
 
-  void _showReturnConfirmation(BuildContext context, ManualRental rental, Duration duration) {
+  void _showReturnConfirmation(
+      BuildContext context, ManualRental rental, Duration duration) {
     final minutes = duration.inMinutes.clamp(1, double.infinity);
     final hours = minutes / 60.0;
-    final totalAmount = double.parse((hours * rental.hourlyRate).toStringAsFixed(2));
+    final totalAmount =
+        double.parse((hours * rental.hourlyRate).toStringAsFixed(2));
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.surfaceDark,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             'Confirm Return',
             style: GoogleFonts.outfit(
@@ -307,24 +334,36 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total Duration:', style: GoogleFonts.inter(color: AppColors.textMuted)),
-                  Text('${duration.inMinutes} mins', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text('Total Duration:',
+                      style: GoogleFonts.inter(color: AppColors.textMuted)),
+                  Text('${duration.inMinutes} mins',
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Rate:', style: GoogleFonts.inter(color: AppColors.textMuted)),
-                  Text('Ksh. ${rental.hourlyRate}/hr', style: GoogleFonts.inter(color: Colors.white)),
+                  Text('Rate:',
+                      style: GoogleFonts.inter(color: AppColors.textMuted)),
+                  Text('Ksh. ${rental.hourlyRate}/hr',
+                      style: GoogleFonts.inter(color: Colors.white)),
                 ],
               ),
               const Divider(color: Colors.white10, height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('AMOUNT DUE:', style: GoogleFonts.inter(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
-                  Text('Ksh. $totalAmount', style: GoogleFonts.outfit(color: AppColors.green, fontWeight: FontWeight.bold, fontSize: 20)),
+                  Text('AMOUNT DUE:',
+                      style: GoogleFonts.inter(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.bold)),
+                  Text('Ksh. $totalAmount',
+                      style: GoogleFonts.outfit(
+                          color: AppColors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20)),
                 ],
               ),
             ],
@@ -332,18 +371,20 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () {
                 ref.read(manualRentalsProvider.notifier).endRental(rental.id);
                 Navigator.pop(context);
-                
+
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: AppColors.surfaceDark,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     title: Text(
                       'Receipt Printed',
                       style: GoogleFonts.outfit(
@@ -358,8 +399,10 @@ class _ActiveManualRentalTileState extends ConsumerState<ActiveManualRentalTile>
                     actions: [
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.green),
-                        child: const Text('OK', style: TextStyle(color: Colors.black)),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.green),
+                        child: const Text('OK',
+                            style: TextStyle(color: Colors.black)),
                       ),
                     ],
                   ),

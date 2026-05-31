@@ -91,5 +91,6 @@ class ManualRental {
 
   String toJson() => json.encode(toMap());
 
-  factory ManualRental.fromJson(String source) => ManualRental.fromMap(json.decode(source));
+  factory ManualRental.fromJson(String source) =>
+      ManualRental.fromMap(json.decode(source));
 }

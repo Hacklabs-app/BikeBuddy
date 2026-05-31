@@ -19,10 +19,12 @@ class ManualRentalBottomSheet extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<ManualRentalBottomSheet> createState() => _ManualRentalBottomSheetState();
+  ConsumerState<ManualRentalBottomSheet> createState() =>
+      _ManualRentalBottomSheetState();
 }
 
-class _ManualRentalBottomSheetState extends ConsumerState<ManualRentalBottomSheet> {
+class _ManualRentalBottomSheetState
+    extends ConsumerState<ManualRentalBottomSheet> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _idController = TextEditingController();
@@ -109,7 +111,8 @@ class _ManualRentalBottomSheetState extends ConsumerState<ManualRentalBottomShee
                           decoration: BoxDecoration(
                             color: AppColors.green.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.green.withValues(alpha: 0.35)),
+                            border: Border.all(
+                                color: AppColors.green.withValues(alpha: 0.35)),
                           ),
                           child: const Icon(
                             Icons.qr_code_scanner_rounded,
@@ -182,10 +185,13 @@ class _ManualRentalBottomSheetState extends ConsumerState<ManualRentalBottomShee
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         final prefs = await SharedPreferences.getInstance();
-                        final totalBikes = prefs.getInt('cached_shop_total_bikes') ?? 0;
-                        final activeDbCount = prefs.getInt('cached_active_database_rentals') ?? 0;
-                        final activeManualCount = ref.read(activeManualRentalsProvider).length;
-                        
+                        final totalBikes =
+                            prefs.getInt('cached_shop_total_bikes') ?? 0;
+                        final activeDbCount =
+                            prefs.getInt('cached_active_database_rentals') ?? 0;
+                        final activeManualCount =
+                            ref.read(activeManualRentalsProvider).length;
+
                         final totalActive = activeDbCount + activeManualCount;
                         if (totalBikes > 0 && totalActive >= totalBikes) {
                           if (context.mounted) {

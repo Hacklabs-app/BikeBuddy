@@ -44,7 +44,11 @@ class AppRoutes {
   static const manualRental = '/manual-rental';
 }
 
-const _ownerRoutes = [AppRoutes.admin, AppRoutes.shopSetup, AppRoutes.manualRental];
+const _ownerRoutes = [
+  AppRoutes.admin,
+  AppRoutes.shopSetup,
+  AppRoutes.manualRental
+];
 const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan];
 const _registrationRoutes = [
   AppRoutes.roleSelection,
