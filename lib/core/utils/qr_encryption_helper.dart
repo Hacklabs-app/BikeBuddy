@@ -12,11 +12,13 @@ class QrEncryptionHelper {
     required String id,
     required String name,
     required String phone,
+    String? idNumber,
   }) {
     final payloadMap = {
       'id': id,
       'name': name,
       'phone': phone,
+      if (idNumber != null) 'idNumber': idNumber,
     };
     final jsonString = jsonEncode(payloadMap);
     final encrypter = encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
@@ -37,6 +39,7 @@ class QrEncryptionHelper {
         'id': decodedMap['id']?.toString() ?? '',
         'name': decodedMap['name']?.toString() ?? '',
         'phone': decodedMap['phone']?.toString() ?? '',
+        'idNumber': decodedMap['idNumber']?.toString() ?? '',
       };
     } catch (_) {
       // Decryption failed: either scanned a different QR or invalid key/IV

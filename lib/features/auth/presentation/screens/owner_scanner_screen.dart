@@ -56,7 +56,9 @@ class _OwnerScannerScreenState extends State<OwnerScannerScreen> {
           context,
           initialName: decrypted['name'],
           initialPhone: decrypted['phone'],
-          initialRiderId: decrypted['id'],
+          initialRiderId: decrypted['idNumber']?.isNotEmpty == true
+              ? decrypted['idNumber']
+              : '',
         );
       }
     } else {

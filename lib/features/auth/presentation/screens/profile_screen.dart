@@ -9,6 +9,7 @@ import '../../../../core/models/user_model.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../state/auth_state.dart';
 import '../widgets/profile_form_widgets.dart';
+import '../../../../core/services/storage_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -41,7 +42,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final user = ref.read(currentUserProvider).valueOrNull;
+    final user = ref.read(currentUserProvider).valueOrNull ??
+                 ref.read(storageServiceProvider).getCachedUser();
     if (user != null) {
       _nameController.text = user.fullName;
       _phoneController.text = user.phoneNumber ?? '';
@@ -64,7 +66,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _loadInitialData() async {
-    final user = ref.read(currentUserProvider).valueOrNull;
+    final user = ref.read(currentUserProvider).valueOrNull ??
+                 ref.read(storageServiceProvider).getCachedUser();
     if (user == null) return;
 
     if (user.role == UserRole.owner) {

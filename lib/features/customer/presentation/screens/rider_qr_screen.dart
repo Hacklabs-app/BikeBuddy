@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/utils/qr_encryption_helper.dart';
 import '../../../../core/widgets/floating_bottom_nav.dart';
 import '../../../../shared/providers/auth_provider.dart';
@@ -13,6 +14,8 @@ class RiderQrScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
+    final cachedUser = ref.read(storageServiceProvider).getCachedUser();
+    final user = userAsync.valueOrNull ?? cachedUser;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
@@ -31,31 +34,14 @@ class RiderQrScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          userAsync.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.green),
-            ),
-            error: (err, _) => Center(
-              child: Text(
-                'Failed to load profile details.',
-                style: GoogleFonts.inter(color: Colors.redAccent),
-              ),
-            ),
-            data: (user) {
-              if (user == null) {
-                return Center(
-                  child: Text(
-                    'No active profile found.',
-                    style: GoogleFonts.inter(color: AppColors.textMuted),
-                  ),
-                );
-              }
-
-              // Generate encrypted payload with rider details
+          if (user != null)
+            Builder(builder: (context) {
+              // Generate encrypted payload with rider details including idNumber
               final encryptedPayload = QrEncryptionHelper.encryptRiderPayload(
                 id: user.id,
                 name: user.fullName,
                 phone: user.phoneNumber ?? '',
+                idNumber: user.idNumber ?? '',
               );
 
               return Padding(
@@ -162,8 +148,19 @@ class RiderQrScreen extends ConsumerWidget {
                   ],
                 ),
               );
-            },
-          ),
+            })
+          else
+            userAsync.maybeWhen(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.green),
+              ),
+              orElse: () => Center(
+                child: Text(
+                  'No active profile found.',
+                  style: GoogleFonts.inter(color: AppColors.textMuted),
+                ),
+              ),
+            ),
           const Positioned(
             bottom: 32,
             left: 24,
