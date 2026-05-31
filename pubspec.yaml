@@ -1,7 +1,7 @@
 name: bike_buddy
 description: A bike hiring app with admin and customer features.
 publish_to: 'none'
-version: 1.4.2+8
+version: 1.5.0+9
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
