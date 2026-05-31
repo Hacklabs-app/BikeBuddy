@@ -705,21 +705,36 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ),
                 ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => ManualRentalBottomSheet.show(
-              context,
-              onQuickLease: () {
+            onPressed: () {
+              if (availableBikes <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Launch Bike QR scanner to initiate checkout...',
-                      style: GoogleFonts.inter(color: Colors.white),
+                      'No available bikes in inventory! Add new bikes or complete active checkouts to lease.',
+                      style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
-                    backgroundColor: AppColors.green,
+                    backgroundColor: Colors.redAccent,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
-              },
-            ),
+                return;
+              }
+              ManualRentalBottomSheet.show(
+                context,
+                onQuickLease: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Launch Bike QR scanner to initiate checkout...',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      backgroundColor: AppColors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              );
+            },
             backgroundColor: AppColors.green,
             icon: const Icon(Icons.add, color: Colors.black),
             label: Text(
