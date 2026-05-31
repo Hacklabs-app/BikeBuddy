@@ -7,14 +7,35 @@ import '../providers/manual_rental_provider.dart';
 
 class ManualRentalBottomSheet extends ConsumerStatefulWidget {
   final VoidCallback? onQuickLease;
-  const ManualRentalBottomSheet({super.key, this.onQuickLease});
+  final String? initialName;
+  final String? initialPhone;
+  final String? initialRiderId;
 
-  static void show(BuildContext context, {VoidCallback? onQuickLease}) {
+  const ManualRentalBottomSheet({
+    super.key,
+    this.onQuickLease,
+    this.initialName,
+    this.initialPhone,
+    this.initialRiderId,
+  });
+
+  static void show(
+    BuildContext context, {
+    VoidCallback? onQuickLease,
+    String? initialName,
+    String? initialPhone,
+    String? initialRiderId,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ManualRentalBottomSheet(onQuickLease: onQuickLease),
+      builder: (context) => ManualRentalBottomSheet(
+        onQuickLease: onQuickLease,
+        initialName: initialName,
+        initialPhone: initialPhone,
+        initialRiderId: initialRiderId,
+      ),
     );
   }
 
@@ -30,6 +51,14 @@ class _ManualRentalBottomSheetState
   final _idController = TextEditingController();
   final _bikeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.initialName ?? '';
+    _phoneController.text = widget.initialPhone ?? '';
+    _idController.text = widget.initialRiderId ?? '';
+  }
 
   @override
   void dispose() {
@@ -88,21 +117,48 @@ class _ManualRentalBottomSheetState
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                          if (widget.onQuickLease != null) {
-                            widget.onQuickLease!();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Launch Bike QR scanner to initiate checkout...',
-                                  style: GoogleFonts.inter(color: Colors.white),
+                        onTap: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          final totalBikes =
+                              prefs.getInt('cached_shop_total_bikes') ?? 0;
+                          final activeDbCount =
+                              prefs.getInt('cached_active_database_rentals') ?? 0;
+                          final activeManualCount =
+                              ref.read(activeManualRentalsProvider).length;
+
+                          final totalActive = activeDbCount + activeManualCount;
+                          if (totalBikes > 0 && totalActive >= totalBikes) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'All $totalBikes bicycles are currently checked out. Cannot rent more!',
+                                    style: GoogleFonts.inter(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
                                 ),
-                                backgroundColor: AppColors.green,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                              );
+                            }
+                            return;
+                          }
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            if (widget.onQuickLease != null) {
+                              widget.onQuickLease!();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Launch Bike QR scanner to initiate checkout...',
+                                    style: GoogleFonts.inter(color: Colors.white),
+                                  ),
+                                  backgroundColor: AppColors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
                           }
                         },
                         borderRadius: BorderRadius.circular(24),

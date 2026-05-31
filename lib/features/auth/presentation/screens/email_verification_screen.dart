@@ -271,24 +271,74 @@ class _EmailVerificationScreenState
                         ),
                       ),
 
-                    // Primary Action: Resend Code with Cool-down
+                    // Check Verification Status Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: (_isResending || _resendCooldown > 0)
-                            ? null
-                            : () => _resendEmail(email),
+                        onPressed: () async {
+                          setState(() {
+                            _errorMessage = null;
+                            _message = "Checking verification status...";
+                          });
+                          try {
+                            // Fetch updated session and profile details from Supabase
+                            await Supabase.instance.client.auth.refreshSession();
+                            ref.invalidate(authStateProvider);
+                            ref.invalidate(currentUserProvider);
+
+                            final updatedUser = Supabase.instance.client.auth.currentUser;
+                            if (updatedUser?.emailConfirmedAt != null) {
+                              setState(() {
+                                _message = "Email successfully verified! Redirecting...";
+                              });
+                            } else {
+                              setState(() {
+                                _errorMessage = "Email is not verified yet. Please make sure you clicked the link in your activation email.";
+                                _message = null;
+                              });
+                            }
+                          } catch (e) {
+                            setState(() {
+                              _errorMessage = "Failed to check status. Please try again.";
+                              _message = null;
+                            });
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green,
+                          backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
-                          disabledBackgroundColor:
-                              AppColors.green.withValues(alpha: 0.3),
-                          disabledForegroundColor: Colors.black38,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 0,
+                        ),
+                        child: Text(
+                          "I've Verified My Email",
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Primary Action: Resend Code with Cool-down
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton(
+                        onPressed: (_isResending || _resendCooldown > 0)
+                            ? null
+                            : () => _resendEmail(email),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white24),
+                          disabledForegroundColor: Colors.white38,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: _isResending
                             ? const SizedBox(
@@ -297,7 +347,7 @@ class _EmailVerificationScreenState
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.black),
+                                      Colors.white),
                                 ),
                               )
                             : Text(
