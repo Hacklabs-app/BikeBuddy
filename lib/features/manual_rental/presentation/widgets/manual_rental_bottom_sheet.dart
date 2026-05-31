@@ -7,14 +7,35 @@ import '../providers/manual_rental_provider.dart';
 
 class ManualRentalBottomSheet extends ConsumerStatefulWidget {
   final VoidCallback? onQuickLease;
-  const ManualRentalBottomSheet({super.key, this.onQuickLease});
+  final String? initialName;
+  final String? initialPhone;
+  final String? initialRiderId;
 
-  static void show(BuildContext context, {VoidCallback? onQuickLease}) {
+  const ManualRentalBottomSheet({
+    super.key,
+    this.onQuickLease,
+    this.initialName,
+    this.initialPhone,
+    this.initialRiderId,
+  });
+
+  static void show(
+    BuildContext context, {
+    VoidCallback? onQuickLease,
+    String? initialName,
+    String? initialPhone,
+    String? initialRiderId,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ManualRentalBottomSheet(onQuickLease: onQuickLease),
+      builder: (context) => ManualRentalBottomSheet(
+        onQuickLease: onQuickLease,
+        initialName: initialName,
+        initialPhone: initialPhone,
+        initialRiderId: initialRiderId,
+      ),
     );
   }
 
@@ -30,6 +51,14 @@ class _ManualRentalBottomSheetState
   final _idController = TextEditingController();
   final _bikeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.initialName ?? '';
+    _phoneController.text = widget.initialPhone ?? '';
+    _idController.text = widget.initialRiderId ?? '';
+  }
 
   @override
   void dispose() {

@@ -382,18 +382,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   label: 'Quick Lease',
                                   icon: Icons.qr_code_scanner_rounded,
                                   color: AppColors.green,
-                                  onTap: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Launch Bike QR scanner to initiate checkout...',
-                                            style: GoogleFonts.inter(
-                                                color: Colors.white)),
-                                        backgroundColor: AppColors.green,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  },
+                                  onTap: () => context.push(AppRoutes.adminScan),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -581,18 +570,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               }
               ManualRentalBottomSheet.show(
                 context,
-                onQuickLease: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Launch Bike QR scanner to initiate checkout...',
-                        style: GoogleFonts.inter(color: Colors.white),
-                      ),
-                      backgroundColor: AppColors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+                onQuickLease: () => context.push(AppRoutes.adminScan),
               );
             },
             backgroundColor: AppColors.green,

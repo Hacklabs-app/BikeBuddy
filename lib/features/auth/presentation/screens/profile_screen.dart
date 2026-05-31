@@ -304,7 +304,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        context.pop();
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          if (user.role == UserRole.owner) {
+            context.go('/admin');
+          } else {
+            context.go('/home');
+          }
+        }
       }
     } catch (e) {
       debugPrint('[PROFILE ERROR] Failed to save changes: $e');
@@ -333,7 +341,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-          context.pop();
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            if (user.role == UserRole.owner) {
+              context.go('/admin');
+            } else {
+              context.go('/home');
+            }
+          }
           return;
         }
 
@@ -378,7 +394,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              if (user?.role == UserRole.owner) {
+                context.go('/admin');
+              } else {
+                context.go('/home');
+              }
+            }
+          },
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Colors.white, size: 20),
         ),

@@ -23,6 +23,9 @@ import '../features/auth/presentation/screens/shop_setup_screen.dart';
 import '../features/auth/presentation/screens/admin_dashboard_screen.dart';
 import '../features/auth/presentation/screens/profile_screen.dart';
 import '../features/manual_rental/presentation/screens/manual_rental_screen.dart';
+import '../features/customer/presentation/screens/rider_qr_screen.dart';
+import '../features/auth/presentation/screens/owner_scanner_screen.dart';
+
 
 // Route constant names for easier management
 class AppRoutes {
@@ -42,12 +45,14 @@ class AppRoutes {
   static const profile = '/profile';
   static const emailVerification = '/email-verification';
   static const manualRental = '/manual-rental';
+  static const adminScan = '/admin-scan';
 }
 
 const _ownerRoutes = [
   AppRoutes.admin,
   AppRoutes.shopSetup,
-  AppRoutes.manualRental
+  AppRoutes.manualRental,
+  AppRoutes.adminScan,
 ];
 const _customerAuthRoutes = [AppRoutes.ride, AppRoutes.scan];
 const _registrationRoutes = [
@@ -235,7 +240,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Guests ARE allowed on Registration routes and Login routes.
         if (_isCustomerAuthRoute(location) ||
             _isOwnerRoute(location) ||
-            location == AppRoutes.profile) {
+            location == AppRoutes.profile ||
+            location == AppRoutes.emailVerification) {
           debugPrint(
               '[ROUTER] Guest blocked from private route. Redirecting to Home');
           return AppRoutes.home;
@@ -376,10 +382,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.scan,
-        builder: (_, __) => const CommonPlaceholderScreen(
-          title: 'Scan QR',
-          tab: FloatingNavTab.scan,
-        ),
+        builder: (_, __) => const RiderQrScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminScan,
+        builder: (_, __) => const OwnerScannerScreen(),
       ),
       GoRoute(
         path: AppRoutes.profile,
