@@ -382,7 +382,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   label: 'Quick Lease',
                                   icon: Icons.qr_code_scanner_rounded,
                                   color: AppColors.green,
-                                  onTap: () => context.push(AppRoutes.adminScan),
+                                  onTap: () {
+                                    if (availableBikes <= 0) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'No available bikes in inventory! Add new bikes or complete active checkouts to lease.',
+                                            style: GoogleFonts.inter(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          backgroundColor: Colors.redAccent,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    context.push(AppRoutes.adminScan);
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 12),
