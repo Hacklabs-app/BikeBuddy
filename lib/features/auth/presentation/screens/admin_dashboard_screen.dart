@@ -40,10 +40,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedName = prefs.getString('cached_shop_name');
+      final cachedId = prefs.getString('cached_shop_id');
       final cachedTotalBikes = prefs.getInt('cached_shop_total_bikes') ?? 0;
       if (cachedName != null && mounted) {
         setState(() {
           _shopDetails = {
+            'id': cachedId,
             'name': cachedName,
             'total_bikes': cachedTotalBikes,
           };
@@ -79,6 +81,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
         try {
           final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_shop_id', shop['id'] ?? '');
           await prefs.setString('cached_shop_name', shop['name'] ?? '');
           await prefs.setInt(
               'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
@@ -148,6 +151,46 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         );
       }
     } catch (e) {
+      final isOfflineError = e.toString().contains('SocketException') ||
+          e.toString().contains('Failed host lookup') ||
+          e.toString().contains('ClientException');
+
+      if (isOfflineError) {
+        debugPrint(
+            '[OFFLINE] Network failed when adding bikes. Registering bike locally. Error: $e');
+        if (mounted) {
+          // Perform local-only inventory register so station owners remain fully operational offline!
+          final currentTotal = _shopDetails?['total_bikes'] ?? 0;
+          final newTotal = currentTotal + count;
+
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('cached_shop_total_bikes', newTotal);
+          } catch (_) {}
+
+          if (!mounted) return;
+
+          setState(() {
+            if (_shopDetails != null) {
+              final updatedShop = Map<String, dynamic>.from(_shopDetails!);
+              updatedShop['total_bikes'] = newTotal;
+              _shopDetails = updatedShop;
+            }
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Offline Mode: Added $count new bike(s) to local inventory!',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              backgroundColor: AppColors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+
       debugPrint('[ADMIN ERROR] Failed to register bikes: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -163,72 +206,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   void _showAddBikeDialog() {
-    final countController = TextEditingController(text: '1');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Add New Bikes',
-          style: GoogleFonts.outfit(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Increase your station\'s live bike inventory by quantity.',
-              style:
-                  GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: countController,
-              style: GoogleFonts.inter(color: Colors.white),
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Number of Bikes',
-                labelStyle: GoogleFonts.inter(color: AppColors.textMuted),
-                hintText: 'e.g. 5',
-                hintStyle: GoogleFonts.inter(color: Colors.white24),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white10),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.green),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child:
-                Text('Cancel', style: GoogleFonts.inter(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final countText = countController.text.trim();
-              final count = int.tryParse(countText) ?? 0;
-              if (count > 0) {
-                Navigator.pop(context);
-                _registerNewBikes(count);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.green,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Add Bikes'),
-          ),
-        ],
+      builder: (context) => AddBikesDialog(
+        onAdd: (count) => _registerNewBikes(count),
       ),
     );
   }
@@ -237,181 +218,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        String title;
-        String subtitle;
-        String statusText;
-        Color statusColor;
-        List<Widget> details = [];
-
-        if (item is ManualRental) {
-          title = item.customerName;
-          subtitle = 'Manual Rental';
-          statusText = item.status == ManualRentalStatus.active
-              ? 'Ongoing'
-              : 'Completed';
-          statusColor = item.status == ManualRentalStatus.active
-              ? Colors.white54
-              : AppColors.green;
-
-          details = [
-            _buildDetailRow('Customer Name', item.customerName),
-            _buildDetailRow('Phone Number', item.customerPhone),
-            _buildDetailRow('ID / Admission Number',
-                item.nationalId.isNotEmpty ? item.nationalId : 'None provided'),
-            _buildDetailRow('Bicycle Label', item.bikeLabel),
-            _buildDetailRow('Start Time',
-                DateFormat('MMM dd, yyyy · hh:mm a').format(item.startTime)),
-            if (item.endTime != null)
-              _buildDetailRow('End Time',
-                  DateFormat('MMM dd, yyyy · hh:mm a').format(item.endTime!)),
-            if (item.totalAmount != null)
-              _buildDetailRow('Amount Paid',
-                  'Ksh. ${item.totalAmount!.toStringAsFixed(2)}'),
-          ];
-        } else {
-          final profile = item['profiles'] as Map<String, dynamic>?;
-          final riderName = profile?['full_name'] ?? 'Rider';
-          final bikeObj = item['bikes'] as Map<String, dynamic>?;
-          final bikeId = bikeObj?['identifier'] ?? 'Bike';
-          final status = item['status'] as String? ?? 'ongoing';
-          final isOngoing = status == 'ongoing';
-
-          title = riderName;
-          subtitle = 'App Rental';
-          statusText = isOngoing ? 'Ongoing' : 'Completed';
-          statusColor = isOngoing ? Colors.white54 : AppColors.green;
-
-          final startTimeStr = item['start_time'] as String?;
-          String startTimeFormatted = 'Unknown';
-          if (startTimeStr != null) {
-            try {
-              startTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
-                  .format(DateTime.parse(startTimeStr).toLocal());
-            } catch (_) {}
-          }
-
-          final endTimeStr = item['end_time'] as String?;
-          String endTimeFormatted = 'Ongoing';
-          if (endTimeStr != null) {
-            try {
-              endTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
-                  .format(DateTime.parse(endTimeStr).toLocal());
-            } catch (_) {}
-          }
-
-          final totalAmt = item['total_amount'];
-          final amountStr = totalAmt != null
-              ? 'Ksh. ${(totalAmt as num).toStringAsFixed(2)}'
-              : 'Ongoing';
-
-          details = [
-            _buildDetailRow('Rider Name', riderName),
-            _buildDetailRow('Bicycle ID', 'Bike $bikeId'),
-            _buildDetailRow('Start Time', startTimeFormatted),
-            _buildDetailRow('End Time', endTimeFormatted),
-            _buildDetailRow('Amount Paid', amountStr),
-            if (item['notes'] != null && item['notes'].toString().isNotEmpty)
-              _buildDetailRow('Notes', item['notes'].toString()),
-          ];
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Color(0xFF141419),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            border: Border(top: BorderSide(color: Colors.white10)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.outfit(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border:
-                          Border.all(color: statusColor.withValues(alpha: 0.2)),
-                    ),
-                    child: Text(
-                      statusText.toUpperCase(),
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              ...details,
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-                fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-        ],
-      ),
+      builder: (context) => ActivityDetailsBottomSheet(item: item),
     );
   }
 
@@ -729,16 +536,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                       }
                                     }
 
+                                    final bikeDisplayName =
+                                        bikeId.startsWith('#') ||
+                                                int.tryParse(bikeId) != null
+                                            ? 'Bike $bikeId'
+                                            : bikeId;
+
                                     return GestureDetector(
                                       onTap: () =>
                                           _showActivityDetails(context, item),
                                       child: ActivityItem(
-                                        title: bikeId.startsWith('#') ||
-                                                int.tryParse(bikeId) != null
-                                            ? 'Bike $bikeId'
-                                            : bikeId,
+                                        title: riderName,
                                         subtitle:
-                                            'By $riderName · $relativeTime',
+                                            '${isOngoing ? 'Leased' : 'Returned'} $bikeDisplayName · $relativeTime',
                                         statusColor: isOngoing
                                             ? Colors.white54
                                             : AppColors.green,

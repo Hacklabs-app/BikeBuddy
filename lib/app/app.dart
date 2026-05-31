@@ -114,9 +114,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
     if (!hasSeenOnboarding) return AppRoutes.onboarding;
 
-    // Check if user is logged in to avoid routing via /home first
+    // Check if user is logged in to avoid routing via /home first (online or offline)
     final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser != null) {
+    final hasCachedUser =
+        ref.read(storageServiceProvider).getCachedUser() != null;
+    if (currentUser != null || hasCachedUser) {
       return AppRoutes.loading;
     }
     return AppRoutes.home;
@@ -175,9 +177,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
         if (!hasSeenOnboarding) return AppRoutes.onboarding;
         final authState = ref.read(authStateProvider);
-        final isLoggedIn = authState.valueOrNull != null;
+        final user = ref.read(currentUserProvider).valueOrNull;
+        final isLoggedIn = authState.valueOrNull != null || user != null;
         if (isLoggedIn) {
-          final user = ref.read(currentUserProvider).valueOrNull;
           final isOwner = user?.role == UserRole.owner;
           return isOwner ? AppRoutes.admin : AppRoutes.home;
         }
@@ -194,8 +196,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final userAsync = ref.read(currentUserProvider);
       final hasSeenOnboarding = ref.read(hasSeenOnboardingProvider);
 
-      final isLoggedIn = authState.valueOrNull != null;
       final user = userAsync.valueOrNull;
+      final isLoggedIn = authState.valueOrNull != null || user != null;
       final isOwner = user?.role == UserRole.owner;
 
       // ── DEBUG LOGGING ──────────────────────────────────────────────────────

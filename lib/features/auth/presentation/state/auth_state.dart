@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/services/storage_service.dart';
 
 class AuthState {
   final bool isEmailLoading;
@@ -244,6 +245,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     debugPrint('[AUTH] Signing out user...');
     state = state.copyWith(isEmailLoading: true, error: null);
     try {
+      // Clear local profile cache first on manual logout
+      await _ref.read(storageServiceProvider).clearCachedUser();
       await _repository.signOut();
       debugPrint('[AUTH] User signed out.');
       if (!mounted) return;

@@ -331,3 +331,50 @@ class ProfileSkeletonLoading extends StatelessWidget {
     );
   }
 }
+
+class ProfilePersonalDetailsSection extends StatelessWidget {
+  final TextEditingController nameController;
+  final TextEditingController phoneController;
+  final TextEditingController? idNumberController;
+  final bool isCustomer;
+
+  const ProfilePersonalDetailsSection({
+    super.key,
+    required this.nameController,
+    required this.phoneController,
+    this.idNumberController,
+    required this.isCustomer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfileCardContainer(children: [
+      ProfileTextField(
+        controller: nameController,
+        labelText: 'Full Name',
+        icon: Icons.person_outline_rounded,
+        validator: (val) =>
+            val == null || val.trim().isEmpty ? 'Please enter your name' : null,
+      ),
+      const SizedBox(height: 16),
+      ProfileTextField(
+        controller: phoneController,
+        labelText: 'Phone Number',
+        icon: Icons.phone_outlined,
+        keyboardType: TextInputType.phone,
+      ),
+      if (isCustomer && idNumberController != null) ...[
+        const SizedBox(height: 16),
+        ProfileTextField(
+          controller: idNumberController!,
+          labelText: 'National ID Number',
+          icon: Icons.badge_outlined,
+          keyboardType: TextInputType.number,
+          validator: (val) => val == null || val.trim().isEmpty
+              ? 'ID number is required'
+              : null,
+        ),
+      ],
+    ]);
+  }
+}

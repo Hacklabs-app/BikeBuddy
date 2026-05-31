@@ -16,6 +16,21 @@ void main() async {
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('[GLOBAL ERROR] Intercepted: $error');
 
+    final errorStr = error.toString();
+    // Silently suppress background Supabase token-refresh network failures while offline
+    final isOfflineAuthRetry =
+        errorStr.contains('AuthRetryableFetchException') ||
+            (errorStr.contains('refresh_token') &&
+                (errorStr.contains('SocketException') ||
+                    errorStr.contains('Failed host lookup') ||
+                    errorStr.contains('ClientException')));
+
+    if (isOfflineAuthRetry) {
+      debugPrint(
+          '[GLOBAL ERROR] Gracefully suppressed background auth offline retry.');
+      return true; // Marked as handled (silently swallowed)
+    }
+
     if (error is AuthException) {
       final message = error.message.replaceAll('+', ' ');
       final code = error.code;

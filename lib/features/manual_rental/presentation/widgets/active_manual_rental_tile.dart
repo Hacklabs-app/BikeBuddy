@@ -381,31 +381,165 @@ class _ActiveManualRentalTileState
 
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: AppColors.surfaceDark,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    title: Text(
-                      'Receipt Printed',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  barrierDismissible: false,
+                  builder: (context) {
+                    final h = duration.inHours;
+                    final m = duration.inMinutes % 60;
+                    final durationStr = h > 0 ? '${h}h ${m}m' : '${m}m';
+
+                    Widget buildReceiptRow(String label, String value) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              label,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            Text(
+                              value,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Dialog(
+                      backgroundColor: Colors.transparent,
+                      insetPadding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 24),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141419),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white12, width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Header Icon
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.green.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.green,
+                                size: 48,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Return Successful',
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'The rental session has been closed.',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Hero Amount Collected
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.02),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'AMOUNT TO COLLECT',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textMuted,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Ksh. $totalAmount',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Receipt Details List
+                            buildReceiptRow('Customer', rental.customerName),
+                            buildReceiptRow(
+                                'Phone Number', rental.customerPhone),
+                            buildReceiptRow('ID/Admission', rental.nationalId),
+                            buildReceiptRow('Bike Label', rental.bikeLabel),
+                            buildReceiptRow(
+                                'Rate', 'Ksh. ${rental.hourlyRate}/hr'),
+                            buildReceiptRow('Total Duration', durationStr),
+
+                            const SizedBox(height: 24),
+
+                            // CTA Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.green,
+                                  foregroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  'Collect Cash & Close',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    content: Text(
-                      'Rental registration completed successfully! Collect Ksh. $totalAmount from ${rental.customerName}.',
-                      style: GoogleFonts.inter(color: Colors.white70),
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.green),
-                        child: const Text('OK',
-                            style: TextStyle(color: Colors.black)),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
               style: ElevatedButton.styleFrom(

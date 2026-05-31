@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Features
+
+* **dashboard:** persist shop ID in local cache and gracefully handle offline exceptions during inventory additions so station owners can register bikes seamlessly in offline mode without warning logs.
+* **auth:** implement offline authentication persistence by caching user profile models locally and falling back gracefully on network errors. This prevents unauthorized redirects to role selection when launching the app offline.
+* **auth:** add offline support for Owner Profile screen by locally caching shop details, rates, and operating hours.
+* **rental:** implement a gorgeous, receipt-styled success dialog on returning a bike that highlights collectable dues, customer details, applied rate, and active duration.
+* **dashboard:** refactor the live rental activity list items to display the Rider Name as the prominent title and the action (e.g. Leased/Returned Bike details) as the subtitle, ensuring intuitive readability.
+
 ## [1.4.2](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.4.1...bike_buddy-v1.4.2) (2026-05-31)
 
 

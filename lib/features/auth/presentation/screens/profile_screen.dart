@@ -36,6 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Map<String, dynamic>? _shopDetails;
   bool _isShopLoading = false;
+  bool _hasCachedData = false;
 
   @override
   void initState() {
@@ -67,6 +68,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (user == null) return;
 
     if (user.role == UserRole.owner) {
+      // First load local cache for instant SWR/offline display
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedName = prefs.getString('cached_shop_name');
+        final cachedPhone = prefs.getString('cached_shop_phone');
+        final cachedAddress = prefs.getString('cached_shop_address');
+        final cachedTotalBikes = prefs.getInt('cached_shop_total_bikes');
+        final cachedRate = prefs.getString('cached_shop_rate');
+        final cachedOpen = prefs.getString('cached_shop_open_time');
+        final cachedClose = prefs.getString('cached_shop_close_time');
+
+        if (mounted) {
+          setState(() {
+            if (cachedName != null) {
+              _shopNameController.text = cachedName;
+              _hasCachedData = true;
+            }
+            if (cachedPhone != null) {
+              _shopPhoneController.text = cachedPhone;
+              _hasCachedData = true;
+            }
+            if (cachedAddress != null) {
+              _shopAddressController.text = cachedAddress;
+            }
+            if (cachedTotalBikes != null) {
+              _totalBikesController.text = cachedTotalBikes.toString();
+            }
+            if (cachedRate != null) {
+              _rateController.text = cachedRate;
+            }
+
+            if (cachedOpen != null) {
+              final parts = cachedOpen.split(':');
+              if (parts.length >= 2) {
+                _shopOpenTime = TimeOfDay(
+                  hour: int.tryParse(parts[0]) ?? 8,
+                  minute: int.tryParse(parts[1]) ?? 0,
+                );
+              }
+            }
+            if (cachedClose != null) {
+              final parts = cachedClose.split(':');
+              if (parts.length >= 2) {
+                _shopCloseTime = TimeOfDay(
+                  hour: int.tryParse(parts[0]) ?? 18,
+                  minute: int.tryParse(parts[1]) ?? 0,
+                );
+              }
+            }
+            _isShopLoading = false;
+          });
+        }
+      } catch (_) {}
+
       setState(() => _isShopLoading = true);
       try {
         final client = Supabase.instance.client;
@@ -109,11 +164,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               .eq('shop_id', shop['id'])
               .maybeSingle();
 
+          String rateStr = '0';
           if (rateRes != null && mounted) {
             _rateController.text = (rateRes['rate_per_hour'] ?? 0).toString();
+            rateStr = (rateRes['rate_per_hour'] ?? 0).toString();
           } else {
             _rateController.text = '0';
           }
+
+          // Cache successfully fetched profile details
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('cached_shop_name', shop['name'] ?? '');
+            await prefs.setString(
+                'cached_shop_phone', shop['phone_number'] ?? '');
+            await prefs.setString('cached_shop_address', shop['address'] ?? '');
+            await prefs.setInt(
+                'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
+            await prefs.setString('cached_shop_rate', rateStr);
+            await prefs.setString('cached_shop_open_time',
+                '${_shopOpenTime.hour}:${_shopOpenTime.minute}');
+            await prefs.setString('cached_shop_close_time',
+                '${_shopCloseTime.hour}:${_shopCloseTime.minute}');
+          } catch (_) {}
         }
       } catch (e) {
         debugPrint('[PROFILE ERROR] Failed to fetch shop details: $e');
@@ -236,6 +309,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       debugPrint('[PROFILE ERROR] Failed to save changes: $e');
       if (mounted) {
+        final isOfflineError = e.toString().contains('SocketException') ||
+            e.toString().contains('Failed host lookup') ||
+            e.toString().contains('ClientException');
+
+        if (isOfflineError) {
+          // Apply local-only updates so the user experience remains fully interactive offline!
+          final updatedUser = user.copyWith(
+            fullName: _nameController.text.trim(),
+            phoneNumber: _phoneController.text.trim(),
+            idNumber: user.role == UserRole.customer
+                ? _idNumberController.text.trim()
+                : user.idNumber,
+          );
+          ref.read(currentUserProvider.notifier).updateLocalUser(updatedUser);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Offline Mode: Profile saved locally on this device!',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              backgroundColor: AppColors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          context.pop();
+          return;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save changes: $e',
@@ -291,7 +392,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         centerTitle: true,
       ),
-      body: user == null || (user.role == UserRole.owner && _isShopLoading)
+      body: user == null ||
+              (user.role == UserRole.owner && _isShopLoading && !_hasCachedData)
           ? const ProfileSkeletonLoading()
           : Form(
               key: _formKey,
@@ -303,35 +405,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     const ProfileSectionHeader(title: 'Personal Information'),
                     const SizedBox(height: 12),
-                    ProfileCardContainer(children: [
-                      ProfileTextField(
-                        controller: _nameController,
-                        labelText: 'Full Name',
-                        icon: Icons.person_outline_rounded,
-                        validator: (val) => val == null || val.trim().isEmpty
-                            ? 'Please enter your name'
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      ProfileTextField(
-                        controller: _phoneController,
-                        labelText: 'Phone Number',
-                        icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.phone,
-                      ),
-                      if (user.role == UserRole.customer) ...[
-                        const SizedBox(height: 16),
-                        ProfileTextField(
-                          controller: _idNumberController,
-                          labelText: 'National ID Number',
-                          icon: Icons.badge_outlined,
-                          keyboardType: TextInputType.number,
-                          validator: (val) => val == null || val.trim().isEmpty
-                              ? 'ID number is required'
-                              : null,
-                        ),
-                      ],
-                    ]),
+                    ProfilePersonalDetailsSection(
+                      nameController: _nameController,
+                      phoneController: _phoneController,
+                      idNumberController: _idNumberController,
+                      isCustomer: user.role == UserRole.customer,
+                    ),
                     const SizedBox(height: 28),
                     if (user.role == UserRole.owner) ...[
                       Row(
