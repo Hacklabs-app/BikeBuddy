@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+* **dashboard:** persist shop ID in local cache and gracefully handle offline exceptions during inventory additions so station owners can register bikes seamlessly in offline mode without warning logs.
 * **auth:** implement offline authentication persistence by caching user profile models locally and falling back gracefully on network errors. This prevents unauthorized redirects to role selection when launching the app offline.
 * **auth:** add offline support for Owner Profile screen by locally caching shop details, rates, and operating hours.
 * **rental:** implement a gorgeous, receipt-styled success dialog on returning a bike that highlights collectable dues, customer details, applied rate, and active duration.

@@ -40,10 +40,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedName = prefs.getString('cached_shop_name');
+      final cachedId = prefs.getString('cached_shop_id');
       final cachedTotalBikes = prefs.getInt('cached_shop_total_bikes') ?? 0;
       if (cachedName != null && mounted) {
         setState(() {
           _shopDetails = {
+            'id': cachedId,
             'name': cachedName,
             'total_bikes': cachedTotalBikes,
           };
@@ -79,6 +81,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
         try {
           final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_shop_id', shop['id'] ?? '');
           await prefs.setString('cached_shop_name', shop['name'] ?? '');
           await prefs.setInt(
               'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
@@ -148,8 +151,47 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         );
       }
     } catch (e) {
+      final isOfflineError = e.toString().contains('SocketException') ||
+          e.toString().contains('Failed host lookup') ||
+          e.toString().contains('ClientException');
+
+      if (isOfflineError) {
+        debugPrint('[OFFLINE] Network failed when adding bikes. Registering bike locally. Error: $e');
+        if (mounted) {
+          // Perform local-only inventory register so station owners remain fully operational offline!
+          final currentTotal = _shopDetails?['total_bikes'] ?? 0;
+          final newTotal = currentTotal + count;
+
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('cached_shop_total_bikes', newTotal);
+          } catch (_) {}
+
+          if (!mounted) return;
+
+          setState(() {
+            if (_shopDetails != null) {
+              final updatedShop = Map<String, dynamic>.from(_shopDetails!);
+              updatedShop['total_bikes'] = newTotal;
+              _shopDetails = updatedShop;
+            }
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Offline Mode: Added $count new bike(s) to local inventory!',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              backgroundColor: AppColors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+
       debugPrint('[ADMIN ERROR] Failed to register bikes: $e');
       if (mounted) {
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to add bikes: $e',

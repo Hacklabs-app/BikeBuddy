@@ -36,6 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Map<String, dynamic>? _shopDetails;
   bool _isShopLoading = false;
+  bool _hasCachedData = false;
 
   @override
   void initState() {
@@ -80,8 +81,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         if (mounted) {
           setState(() {
-            if (cachedName != null) _shopNameController.text = cachedName;
-            if (cachedPhone != null) _shopPhoneController.text = cachedPhone;
+            if (cachedName != null) {
+              _shopNameController.text = cachedName;
+              _hasCachedData = true;
+            }
+            if (cachedPhone != null) {
+              _shopPhoneController.text = cachedPhone;
+              _hasCachedData = true;
+            }
             if (cachedAddress != null) _shopAddressController.text = cachedAddress;
             if (cachedTotalBikes != null) _totalBikesController.text = cachedTotalBikes.toString();
             if (cachedRate != null) _rateController.text = cachedRate;
@@ -292,6 +299,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       debugPrint('[PROFILE ERROR] Failed to save changes: $e');
       if (mounted) {
+        final isOfflineError = e.toString().contains('SocketException') ||
+            e.toString().contains('Failed host lookup') ||
+            e.toString().contains('ClientException');
+
+        if (isOfflineError) {
+          // Apply local-only updates so the user experience remains fully interactive offline!
+          final updatedUser = user.copyWith(
+            fullName: _nameController.text.trim(),
+            phoneNumber: _phoneController.text.trim(),
+            idNumber: user.role == UserRole.customer
+                ? _idNumberController.text.trim()
+                : user.idNumber,
+          );
+          ref.read(currentUserProvider.notifier).updateLocalUser(updatedUser);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Offline Mode: Profile saved locally on this device!',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              backgroundColor: AppColors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          context.pop();
+          return;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save changes: $e',
@@ -347,7 +381,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         centerTitle: true,
       ),
-      body: user == null || (user.role == UserRole.owner && _isShopLoading)
+      body: user == null || (user.role == UserRole.owner && _isShopLoading && !_hasCachedData)
           ? const ProfileSkeletonLoading()
           : Form(
               key: _formKey,
