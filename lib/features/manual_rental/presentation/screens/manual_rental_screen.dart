@@ -77,7 +77,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                         Expanded(
                           child: _buildStatCard(
                             title: 'Daily Earnings',
-                            value: 'Ksh. ${totalEarnedToday.toStringAsFixed(0)}',
+                            value:
+                                'Ksh. ${totalEarnedToday.toStringAsFixed(0)}',
                             color: AppColors.green,
                           ),
                         ),
@@ -283,8 +284,9 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         IconButton(
-                                          onPressed: () => _showDeleteConfirmation(
-                                              context, rental),
+                                          onPressed: () =>
+                                              _showDeleteConfirmation(
+                                                  context, rental),
                                           constraints: const BoxConstraints(),
                                           padding: const EdgeInsets.all(8),
                                           icon: const Icon(

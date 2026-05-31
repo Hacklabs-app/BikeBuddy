@@ -25,7 +25,8 @@ class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
       // If offline/disconnected, check if there's a cached session profile on-device
       final cached = storage.getCachedUser();
       if (cached != null) {
-        debugPrint('[OFFLINE] Decoupled session. Active cached profile loaded: ${cached.id} (${cached.role})');
+        debugPrint(
+            '[OFFLINE] Decoupled session. Active cached profile loaded: ${cached.id} (${cached.role})');
         return cached;
       }
       return null;
@@ -34,7 +35,8 @@ class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
     // Cache-First (SWR) Retrieval: if cache exists, load instantly and sync in the background
     final cached = storage.getCachedUser();
     if (cached != null && cached.id == user.id) {
-      debugPrint('[SWR] Instant load cached profile for ${cached.id} (${cached.role})');
+      debugPrint(
+          '[SWR] Instant load cached profile for ${cached.id} (${cached.role})');
       _syncProfileInBackground(user, cached);
       return cached;
     }
@@ -69,7 +71,8 @@ class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
       debugPrint('[API RESPONSE] Shop ID: $shopId');
     }
 
-    final fetchedUser = UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});
+    final fetchedUser =
+        UserModel.fromMap({...data, 'email': user.email, 'shop_id': shopId});
     await storage.setCachedUser(fetchedUser);
     return fetchedUser;
   }
@@ -78,7 +81,8 @@ class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
     try {
       final updatedUser = await _fetchProfileFromNetwork(user);
       if (updatedUser != null && _isProfileChanged(cached, updatedUser)) {
-        debugPrint('[SYNC] Detected profile updates from remote. Updating state silently.');
+        debugPrint(
+            '[SYNC] Detected profile updates from remote. Updating state silently.');
         state = AsyncValue.data(updatedUser);
       }
     } catch (e) {

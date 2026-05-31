@@ -18,14 +18,16 @@ void main() async {
 
     final errorStr = error.toString();
     // Silently suppress background Supabase token-refresh network failures while offline
-    final isOfflineAuthRetry = errorStr.contains('AuthRetryableFetchException') ||
-        (errorStr.contains('refresh_token') &&
-            (errorStr.contains('SocketException') ||
-                errorStr.contains('Failed host lookup') ||
-                errorStr.contains('ClientException')));
+    final isOfflineAuthRetry =
+        errorStr.contains('AuthRetryableFetchException') ||
+            (errorStr.contains('refresh_token') &&
+                (errorStr.contains('SocketException') ||
+                    errorStr.contains('Failed host lookup') ||
+                    errorStr.contains('ClientException')));
 
     if (isOfflineAuthRetry) {
-      debugPrint('[GLOBAL ERROR] Gracefully suppressed background auth offline retry.');
+      debugPrint(
+          '[GLOBAL ERROR] Gracefully suppressed background auth offline retry.');
       return true; // Marked as handled (silently swallowed)
     }
 

@@ -415,7 +415,8 @@ class _ActiveManualRentalTileState
 
                     return Dialog(
                       backgroundColor: Colors.transparent,
-                      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                      insetPadding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 24),
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
@@ -464,7 +465,7 @@ class _ActiveManualRentalTileState
                               ),
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Hero Amount Collected
                             Container(
                               width: double.infinity,
@@ -501,14 +502,16 @@ class _ActiveManualRentalTileState
 
                             // Receipt Details List
                             buildReceiptRow('Customer', rental.customerName),
-                            buildReceiptRow('Phone Number', rental.customerPhone),
+                            buildReceiptRow(
+                                'Phone Number', rental.customerPhone),
                             buildReceiptRow('ID/Admission', rental.nationalId),
                             buildReceiptRow('Bike Label', rental.bikeLabel),
-                            buildReceiptRow('Rate', 'Ksh. ${rental.hourlyRate}/hr'),
+                            buildReceiptRow(
+                                'Rate', 'Ksh. ${rental.hourlyRate}/hr'),
                             buildReceiptRow('Total Duration', durationStr),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // CTA Button
                             SizedBox(
                               width: double.infinity,

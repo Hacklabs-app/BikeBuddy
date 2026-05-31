@@ -116,7 +116,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
     // Check if user is logged in to avoid routing via /home first (online or offline)
     final currentUser = Supabase.instance.client.auth.currentUser;
-    final hasCachedUser = ref.read(storageServiceProvider).getCachedUser() != null;
+    final hasCachedUser =
+        ref.read(storageServiceProvider).getCachedUser() != null;
     if (currentUser != null || hasCachedUser) {
       return AppRoutes.loading;
     }
