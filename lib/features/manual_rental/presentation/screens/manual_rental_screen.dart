@@ -1,13 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/models/manual_rental.dart';
 import '../providers/manual_rental_provider.dart';
+import '../widgets/active_manual_rental_tile.dart';
 
 class ManualRentalScreen extends ConsumerStatefulWidget {
   const ManualRentalScreen({super.key});
@@ -90,13 +89,7 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                         itemCount: activeRentals.length,
                         itemBuilder: (context, index) {
                           final rental = activeRentals[index];
-                          return GestureDetector(
-                            onTap: () => _showContactOptionsBottomSheet(context, rental),
-                            child: _ActiveRentalTile(
-                              rental: rental,
-                              onEndRental: () => _showEndRentalReceipt(rental),
-                            ),
-                          );
+                          return ActiveManualRentalTile(rental: rental);
                         },
                       ),
                     const SizedBox(height: 32),
@@ -327,7 +320,7 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Contact & Rental Info',
+                'Completed Rental Details',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.textMuted,
@@ -406,172 +399,8 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
                   ),
                 ],
               ),
-              if (rental.status == ManualRentalStatus.active) ...[
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showEndRentalReceipt(rental);
-                    },
-                    icon: const Icon(Icons.assignment_return_outlined, size: 18),
-                    label: Text(
-                      'Return Bike',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.green,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
+              const SizedBox(height: 24),
             ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showEndRentalReceipt(ManualRental rental) {
-    final now = DateTime.now();
-    final duration = now.difference(rental.startTime);
-    final minutes = duration.inMinutes.clamp(1, double.infinity);
-    final hours = minutes / 60.0;
-    final finalAmount = hours * rental.hourlyRate;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF141419),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.receipt_long_rounded,
-                  size: 48,
-                  color: AppColors.green,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Rental Receipt',
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Confirm return and collect payment',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildReceiptRow('Customer', rental.customerName),
-                _buildReceiptRow('Phone', rental.customerPhone),
-                if (rental.nationalId.isNotEmpty)
-                  _buildReceiptRow('ID/Admission', rental.nationalId),
-                _buildReceiptRow('Bike Label', rental.bikeLabel),
-                _buildReceiptRow(
-                    'Checked In', DateFormat('h:mm a').format(rental.startTime)),
-                _buildReceiptRow('Checked Out', DateFormat('h:mm a').format(now)),
-                _buildReceiptRow(
-                    'Duration', _getDurationString(rental.startTime, now)),
-                _buildReceiptRow(
-                    'Hourly Rate', 'Ksh ${rental.hourlyRate.toStringAsFixed(2)}'),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(color: Colors.white10),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TOTAL DUE',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    Text(
-                      'Ksh ${finalAmount.toStringAsFixed(2)}',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 24,
-                        color: AppColors.green,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.inter(color: Colors.white54),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ref
-                              .read(manualRentalsProvider.notifier)
-                              .endRental(rental.id);
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Rental successfully completed & paid!',
-                                  style: GoogleFonts.inter(color: Colors.white)),
-                              backgroundColor: AppColors.green,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          'End Rental',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         );
       },
@@ -625,26 +454,6 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildReceiptRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-                fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-        ],
-      ),
     );
   }
 
@@ -766,149 +575,4 @@ class _ManualRentalScreenState extends ConsumerState<ManualRentalScreen> {
   }
 }
 
-class _ActiveRentalTile extends StatefulWidget {
-  final ManualRental rental;
-  final VoidCallback onEndRental;
 
-  const _ActiveRentalTile({
-    required this.rental,
-    required this.onEndRental,
-  });
-
-  @override
-  State<_ActiveRentalTile> createState() => _ActiveRentalTileState();
-}
-
-class _ActiveRentalTileState extends State<_ActiveRentalTile> {
-  Timer? _timer;
-  late ValueNotifier<Duration> _elapsedNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    _elapsedNotifier = ValueNotifier(
-        DateTime.now().difference(widget.rental.startTime));
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        _elapsedNotifier.value =
-            DateTime.now().difference(widget.rental.startTime);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _elapsedNotifier.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.green,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.rental.customerName,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${widget.rental.bikeLabel} · Ksh ${widget.rental.hourlyRate.toStringAsFixed(0)}/hr',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'ID/Adm: ${widget.rental.nationalId.isNotEmpty ? widget.rental.nationalId : "N/A"} · ${widget.rental.customerPhone}',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: Colors.white30,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Row(
-            children: [
-              ValueListenableBuilder<Duration>(
-                valueListenable: _elapsedNotifier,
-                builder: (context, duration, _) {
-                  final hrs = duration.inHours.toString().padLeft(2, '0');
-                  final mins = (duration.inMinutes % 60).toString().padLeft(2, '0');
-                  final secs = (duration.inSeconds % 60).toString().padLeft(2, '0');
-                  return Text(
-                    '$hrs:$mins:$secs',
-                    style: GoogleFonts.shareTechMono(
-                      fontSize: 14,
-                      color: AppColors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                height: 36,
-                child: ElevatedButton(
-                  onPressed: widget.onEndRental,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withValues(alpha: 0.05),
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Return',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
