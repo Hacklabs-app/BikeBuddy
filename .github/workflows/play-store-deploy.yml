@@ -69,4 +69,4 @@ jobs:
           packageName: com.bikebuddy.mobile
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal
-          status: draft
+          status: completed
