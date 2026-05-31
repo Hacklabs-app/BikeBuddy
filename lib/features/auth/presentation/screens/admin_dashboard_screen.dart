@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +10,10 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../app/app.dart';
 import '../widgets/admin_dashboard_widgets.dart';
+import '../../../manual_rental/domain/models/manual_rental.dart';
+import '../../../manual_rental/presentation/providers/manual_rental_provider.dart';
+import '../../../manual_rental/presentation/widgets/active_manual_rental_tile.dart';
+import '../../../manual_rental/presentation/widgets/manual_rental_bottom_sheet.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -64,13 +69,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       if (shop != null) {
         final shopId = shop['id'];
 
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cached_shop_name', shop['name'] ?? '');
-          await prefs.setInt(
-              'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
-        } catch (_) {}
-
         final activeRentalsRes = await client
             .from('rentals')
             .select('id')
@@ -78,6 +76,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             .eq('status', 'ongoing');
 
         final activeCount = (activeRentalsRes as List).length;
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_shop_name', shop['name'] ?? '');
+          await prefs.setInt(
+              'cached_shop_total_bikes', shop['total_bikes'] ?? 0);
+          await prefs.setInt('cached_active_database_rentals', activeCount);
+        } catch (_) {}
 
         final activitiesRes = await client
             .from('rentals')
@@ -227,6 +233,188 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
+  void _showActivityDetails(BuildContext context, dynamic item) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        String title;
+        String subtitle;
+        String statusText;
+        Color statusColor;
+        List<Widget> details = [];
+
+        if (item is ManualRental) {
+          title = item.customerName;
+          subtitle = 'Manual Rental';
+          statusText = item.status == ManualRentalStatus.active
+              ? 'Ongoing'
+              : 'Completed';
+          statusColor = item.status == ManualRentalStatus.active
+              ? Colors.white54
+              : AppColors.green;
+
+          details = [
+            _buildDetailRow('Customer Name', item.customerName),
+            _buildDetailRow('Phone Number', item.customerPhone),
+            _buildDetailRow('ID / Admission Number',
+                item.nationalId.isNotEmpty ? item.nationalId : 'None provided'),
+            _buildDetailRow('Bicycle Label', item.bikeLabel),
+            _buildDetailRow('Start Time',
+                DateFormat('MMM dd, yyyy · hh:mm a').format(item.startTime)),
+            if (item.endTime != null)
+              _buildDetailRow('End Time',
+                  DateFormat('MMM dd, yyyy · hh:mm a').format(item.endTime!)),
+            if (item.totalAmount != null)
+              _buildDetailRow('Amount Paid',
+                  'Ksh. ${item.totalAmount!.toStringAsFixed(2)}'),
+          ];
+        } else {
+          final profile = item['profiles'] as Map<String, dynamic>?;
+          final riderName = profile?['full_name'] ?? 'Rider';
+          final bikeObj = item['bikes'] as Map<String, dynamic>?;
+          final bikeId = bikeObj?['identifier'] ?? 'Bike';
+          final status = item['status'] as String? ?? 'ongoing';
+          final isOngoing = status == 'ongoing';
+
+          title = riderName;
+          subtitle = 'App Rental';
+          statusText = isOngoing ? 'Ongoing' : 'Completed';
+          statusColor = isOngoing ? Colors.white54 : AppColors.green;
+
+          final startTimeStr = item['start_time'] as String?;
+          String startTimeFormatted = 'Unknown';
+          if (startTimeStr != null) {
+            try {
+              startTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
+                  .format(DateTime.parse(startTimeStr).toLocal());
+            } catch (_) {}
+          }
+
+          final endTimeStr = item['end_time'] as String?;
+          String endTimeFormatted = 'Ongoing';
+          if (endTimeStr != null) {
+            try {
+              endTimeFormatted = DateFormat('MMM dd, yyyy · hh:mm a')
+                  .format(DateTime.parse(endTimeStr).toLocal());
+            } catch (_) {}
+          }
+
+          final totalAmt = item['total_amount'];
+          final amountStr = totalAmt != null
+              ? 'Ksh. ${(totalAmt as num).toStringAsFixed(2)}'
+              : 'Ongoing';
+
+          details = [
+            _buildDetailRow('Rider Name', riderName),
+            _buildDetailRow('Bicycle ID', 'Bike $bikeId'),
+            _buildDetailRow('Start Time', startTimeFormatted),
+            _buildDetailRow('End Time', endTimeFormatted),
+            _buildDetailRow('Amount Paid', amountStr),
+            if (item['notes'] != null && item['notes'].toString().isNotEmpty)
+              _buildDetailRow('Notes', item['notes'].toString()),
+          ];
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF141419),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            border: Border(top: BorderSide(color: Colors.white10)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.outfit(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border:
+                          Border.all(color: statusColor.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      statusText.toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              ...details,
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(currentUserProvider);
@@ -251,9 +439,31 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
         final stationName = _shopDetails?['name'] ?? 'Loading Station...';
         final totalBikes = _shopDetails?['total_bikes'] ?? 0;
-        final activeRentals = _activeRentalsCount;
+
+        // Watch active manual rentals to combine them dynamically into the dashboard metrics
+        final activeManualRentals = ref.watch(activeManualRentalsProvider);
+        final activeManualCount = activeManualRentals.length;
+        final manualRentals = ref.watch(manualRentalsProvider);
+
+        final totalActiveRentals = _activeRentalsCount + activeManualCount;
         final availableBikes =
-            (totalBikes - activeRentals).clamp(0, totalBikes);
+            (totalBikes - totalActiveRentals).clamp(0, totalBikes);
+
+        // Combine database activities and local manual rentals into a sorted list
+        final List<dynamic> unifiedActivities = [...manualRentals];
+        for (final act in _recentActivities) {
+          final id = act['id'];
+          if (!manualRentals.any((m) => m.id == id)) {
+            unifiedActivities.add(act);
+          }
+        }
+        unifiedActivities.sort((a, b) {
+          final DateTime timeA =
+              a is ManualRental ? a.startTime : DateTime.parse(a['start_time']);
+          final DateTime timeB =
+              b is ManualRental ? b.startTime : DateTime.parse(b['start_time']);
+          return timeB.compareTo(timeA);
+        });
 
         return Scaffold(
           backgroundColor: const Color(0xFF0D0D0D),
@@ -269,8 +479,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   child: SafeArea(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                          top: 16,
+                          bottom: 80), // extra padding for FAB
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -332,7 +545,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               Expanded(
                                 child: MetricCard(
                                   title: 'Active Rentals',
-                                  value: '$activeRentals',
+                                  value: '$totalActiveRentals',
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -344,6 +557,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               ),
                             ],
                           ),
+
                           const SizedBox(height: 28),
                           Text(
                             'Quick Operations',
@@ -358,7 +572,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             children: [
                               Expanded(
                                 child: DashboardActionButton(
-                                  label: 'Rent Out Bike',
+                                  label: 'Quick Lease',
                                   icon: Icons.qr_code_scanner_rounded,
                                   color: AppColors.green,
                                   onTap: () {
@@ -387,6 +601,32 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               ),
                             ],
                           ),
+
+                          // Dynamic Active Rentals List
+                          if (activeManualRentals.isNotEmpty) ...[
+                            const SizedBox(height: 28),
+                            Text(
+                              'Active Rentals (${activeManualRentals.length})',
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: activeManualRentals.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, idx) {
+                                final rental = activeManualRentals[idx];
+                                return ActiveManualRentalTile(rental: rental);
+                              },
+                            ),
+                          ],
+
                           const SizedBox(height: 28),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -399,71 +639,112 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              if (_recentActivities.isNotEmpty)
-                                Text(
-                                  'See all',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: AppColors.green,
-                                    fontWeight: FontWeight.w600,
+                              if (unifiedActivities.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () =>
+                                      context.push(AppRoutes.manualRental),
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'See all',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: AppColors.green,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
                                 ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          _recentActivities.isEmpty
+                          unifiedActivities.isEmpty
                               ? const EmptyActivityState()
                               : ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: _recentActivities.length,
+                                  itemCount: unifiedActivities.length,
                                   itemBuilder: (context, index) {
-                                    final activity = _recentActivities[index];
-                                    final riderProfile = activity['profiles']
-                                        as Map<String, dynamic>?;
-                                    final riderName =
-                                        riderProfile?['full_name'] ?? 'Rider';
-                                    final bikeObj = activity['bikes']
-                                        as Map<String, dynamic>?;
-                                    final bikeId =
-                                        bikeObj?['identifier'] ?? 'Bike';
-                                    final status =
-                                        activity['status'] as String? ??
-                                            'ongoing';
-                                    final startTimeStr =
-                                        activity['start_time'] as String?;
+                                    final item = unifiedActivities[index];
 
+                                    String bikeId;
+                                    String riderName;
                                     String relativeTime = 'Just now';
-                                    if (startTimeStr != null) {
-                                      try {
-                                        final startTime =
-                                            DateTime.parse(startTimeStr)
-                                                .toLocal();
-                                        final diff = DateTime.now()
-                                            .difference(startTime);
-                                        if (diff.inMinutes < 60) {
-                                          relativeTime =
-                                              '${diff.inMinutes} mins ago';
-                                        } else if (diff.inHours < 24) {
-                                          relativeTime =
-                                              '${diff.inHours} hrs ago';
-                                        } else {
-                                          relativeTime =
-                                              DateFormat('MMM dd, hh:mm a')
-                                                  .format(startTime);
-                                        }
-                                      } catch (_) {}
+                                    bool isOngoing;
+
+                                    if (item is ManualRental) {
+                                      bikeId = item.bikeLabel;
+                                      riderName = item.customerName;
+                                      isOngoing = item.status ==
+                                          ManualRentalStatus.active;
+
+                                      final diff = DateTime.now()
+                                          .difference(item.startTime);
+                                      if (diff.inMinutes < 60) {
+                                        relativeTime =
+                                            '${diff.inMinutes} mins ago';
+                                      } else if (diff.inHours < 24) {
+                                        relativeTime =
+                                            '${diff.inHours} hrs ago';
+                                      } else {
+                                        relativeTime =
+                                            DateFormat('MMM dd, hh:mm a')
+                                                .format(item.startTime);
+                                      }
+                                    } else {
+                                      final riderProfile = item['profiles']
+                                          as Map<String, dynamic>?;
+                                      riderName =
+                                          riderProfile?['full_name'] ?? 'Rider';
+                                      final bikeObj = item['bikes']
+                                          as Map<String, dynamic>?;
+                                      bikeId = bikeObj?['identifier'] ?? 'Bike';
+                                      final status =
+                                          item['status'] as String? ??
+                                              'ongoing';
+                                      isOngoing = status == 'ongoing';
+
+                                      final startTimeStr =
+                                          item['start_time'] as String?;
+                                      if (startTimeStr != null) {
+                                        try {
+                                          final startTime =
+                                              DateTime.parse(startTimeStr)
+                                                  .toLocal();
+                                          final diff = DateTime.now()
+                                              .difference(startTime);
+                                          if (diff.inMinutes < 60) {
+                                            relativeTime =
+                                                '${diff.inMinutes} mins ago';
+                                          } else if (diff.inHours < 24) {
+                                            relativeTime =
+                                                '${diff.inHours} hrs ago';
+                                          } else {
+                                            relativeTime =
+                                                DateFormat('MMM dd, hh:mm a')
+                                                    .format(startTime);
+                                          }
+                                        } catch (_) {}
+                                      }
                                     }
 
-                                    return ActivityItem(
-                                      title: 'Bike #$bikeId',
-                                      subtitle: 'By $riderName · $relativeTime',
-                                      statusColor: status == 'ongoing'
-                                          ? Colors.white54
-                                          : AppColors.green,
-                                      statusText: status == 'ongoing'
-                                          ? 'Ongoing'
-                                          : 'Completed',
+                                    return GestureDetector(
+                                      onTap: () =>
+                                          _showActivityDetails(context, item),
+                                      child: ActivityItem(
+                                        title: bikeId.startsWith('#') ||
+                                                int.tryParse(bikeId) != null
+                                            ? 'Bike $bikeId'
+                                            : bikeId,
+                                        subtitle:
+                                            'By $riderName · $relativeTime',
+                                        statusColor: isOngoing
+                                            ? Colors.white54
+                                            : AppColors.green,
+                                        statusText:
+                                            isOngoing ? 'Ongoing' : 'Completed',
+                                      ),
                                     );
                                   },
                                 ),
@@ -472,6 +753,48 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                   ),
                 ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () {
+              if (availableBikes <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'No available bikes in inventory! Add new bikes or complete active checkouts to lease.',
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    backgroundColor: Colors.redAccent,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+              ManualRentalBottomSheet.show(
+                context,
+                onQuickLease: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Launch Bike QR scanner to initiate checkout...',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      backgroundColor: AppColors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              );
+            },
+            backgroundColor: AppColors.green,
+            icon: const Icon(Icons.add, color: Colors.black),
+            label: Text(
+              'Lease',
+              style: GoogleFonts.inter(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         );
       },
     );

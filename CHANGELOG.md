@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] (Unreleased)
+
+### Features
+
+* **manual-rental:** Implement offline-first Manual Rental Management system (Issue #42) for station owners, including real-time rates/duration billing calculation, dynamic inventory updates (available/active counters), persistent local state, and translucent premium dark UX components.
+* **manual-rental-ux-refinement:** Enhance manual-rental UX/UI: replace "Clock out" jargon with context-friendly "End Rental" & "Active Rentals" terminology, standardize user unique identifier field to "ID/Admission Number", localize currency exclusively to Kenyan Shillings (Ksh), and add interactive user details sheet for direct calling (using url_launcher). Remove redundant "Hourly Rate" fields from check-in forms since rate is a global default, remove copy clipboard buttons in favor of clean vertical detail layouts, use simply "Bike" or "Bicycle" instead of "Manual Bike", make activity cards on the main dashboard clickable to open the detail drawers, and hook up the "See all" navigation link.
+* **quick-lease-and-swipe-to-delete:** Convert the "Quick Lease" button in the bottom sheet to a standalone, large, tactile green QR icon, and remove the subtitle text to maximize vertical screen space. Implement a modern swipe-left-to-delete gesture (using `Dismissible`) on the recent activity logs list with a custom red background and an elegant confirmation dialog. Add eager inventory verification to the Lease FAB on the admin dashboard, immediately preventing checkouts and prompting the owner if no bikes are available.
+* **manual-rental-cleanup:** Clean up and refactor ManualRentalScreen to eliminate redundant duplication of business/presentation logic, modularizing custom widgets, removing 450+ lines of duplicate layout blocks, and ensuring robust static analysis with zero errors.
+
 ## [1.3.1](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.3.0...bike_buddy-v1.3.1) (2026-05-23)
 
 
