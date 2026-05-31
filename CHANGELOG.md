@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/Hacklabs-app/BikeBuddy/compare/bike_buddy-v1.4.2...bike_buddy-v1.5.0) (2026-05-31)
+
+
+### Features
+
+* Enhance profile screen with QR code functionality and crash prevention ([#82](https://github.com/Hacklabs-app/BikeBuddy/issues/82)) ([fa981ec](https://github.com/Hacklabs-app/BikeBuddy/commit/fa981ec34532252d88c0bfcba313f3b242c45b56))
+* Implement offline authentication and enhance inventory management ([#80](https://github.com/Hacklabs-app/BikeBuddy/issues/80)) ([ed3b743](https://github.com/Hacklabs-app/BikeBuddy/commit/ed3b7439abc4789689fa941193d614507ece12f2))
+
 ## [Unreleased]
 
 ### Features
